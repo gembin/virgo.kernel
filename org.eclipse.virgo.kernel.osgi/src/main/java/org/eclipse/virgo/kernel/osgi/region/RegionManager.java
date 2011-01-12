@@ -58,6 +58,8 @@ final class RegionManager {
 
     private static final String PLUGGABLE_CLASS_LOADING_HOOK_CLASS_NAME = "org.eclipse.virgo.osgi.extensions.equinox.hooks.PluggableClassLoadingHook";
 
+    private static final String USER_REGION_PATH = "region.path";
+
     private static final String USER_REGION_BASE_BUNDLES_PROPERTY = "baseBundles";
 
     private static final String USER_REGION_PACKAGE_IMPORTS_PROPERTY = "packageImports";
@@ -90,6 +92,8 @@ final class RegionManager {
 
     private Dictionary<String, String> userRegionProperties;
 
+    private String regionPath;
+
     private String regionBundles;
 
     private String regionImports;
@@ -118,6 +122,7 @@ final class RegionManager {
             
             if (properties != null) {
                 this.userRegionProperties = properties;
+                this.regionPath = properties.get(USER_REGION_PATH);
                 this.regionBundles = properties.get(USER_REGION_BASE_BUNDLES_PROPERTY);
                 this.regionImports = properties.get(USER_REGION_PACKAGE_IMPORTS_PROPERTY);
                 this.regionServiceImports = properties.get(USER_REGION_SERVICE_IMPORTS_PROPERTY);
@@ -306,13 +311,16 @@ final class RegionManager {
     }
 
     private void initialiseUserRegionBundles(BundleContext surrogateBundleContext) throws BundleException {
+        String userRegionPathProperty = this.regionPath != null ? this.regionPath
+            : this.bundleContext.getProperty(USER_REGION_PATH);
         String userRegionBundlesProperty = this.regionBundles != null ? this.regionBundles
             : this.bundleContext.getProperty(USER_REGION_BASE_BUNDLES_PROPERTY);
+
 
         if (userRegionBundlesProperty != null) {
             List<Bundle> bundlesToStart = new ArrayList<Bundle>();
 
-            for (BundleEntry entry : this.parser.parseBundleEntries(userRegionBundlesProperty)) {
+            for (BundleEntry entry : this.parser.parseBundleEntries(userRegionPathProperty, userRegionBundlesProperty)) {
                 Bundle bundle = surrogateBundleContext.installBundle(entry.getURI().toString());
 
                 if (entry.isAutoStart()) {

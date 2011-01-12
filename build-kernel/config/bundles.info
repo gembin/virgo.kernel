@@ -1,0 +1,60 @@
+################################################################################
+# Copyright (c) 2010 SAP AG
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which accompanies this distribution, and is available at
+# http://www.eclipse.org/legal/epl-v10.html
+#
+# Contributors:
+#   Hristo Iliev, SAP AG - initial contribution
+################################################################################
+
+#version=1
+org.eclipse.equinox.simpleconfigurator,@EQUINOX.SIMPLECONFIGURATOR.VERSION@,org.eclipse.equinox.simpleconfigurator_@EQUINOX.SIMPLECONFIGURATOR.VERSION@,1,true
+
+# contains org.eclipse.virgo.osgi.launcher.parser.ArgumentParser used by kenrel.osgi bundle in RegionManager
+org.eclipse.virgo.osgi.launcher,@OSGI.EXTENSIONS.VERSION@,org.eclipse.virgo.osgi.launcher_@OSGI.EXTENSIONS.VERSION@.jar,2,false
+
+# shutdown functionality
+org.eclipse.virgo.kernel.shutdown,@KERNEL.VERSION@,org.eclipse.virgo.kernel.shutdown_@KERNEL.VERSION@.jar,2,true
+
+# framework extension hook
+org.eclipse.virgo.osgi.extensions.equinox,@OSGI.EXTENSIONS.VERSION@,org.eclipse.virgo.osgi.extensions.equinox_@OSGI.EXTENSIONS.VERSION@.jar,2,false
+
+# Virgo kernel
+com.springsource.slf4j.api,@SLF4J.VERSION@,com.springsource.slf4j.api_@SLF4J.VERSION@.jar,2,true
+com.springsource.slf4j.org.apache.commons.logging,@SLF4J.VERSION@,com.springsource.slf4j.org.apache.commons.logging_@SLF4J.VERSION@.jar,2,true
+com.springsource.org.aspectj.weaver,@ASPECTJ.VERSION@,com.springsource.org.aspectj.weaver_@ASPECTJ.VERSION@.jar,2,true
+org.eclipse.virgo.medic,@MEDIC.VERSION@,org.eclipse.virgo.medic_@MEDIC.VERSION@.jar,2,true
+org.eclipse.osgi.services,@OSGI.SERVICES.VERSION@,org.eclipse.osgi.services_@OSGI.SERVICES.VERSION@.jar,2,true
+org.eclipse.equinox.cm,@EQUINOX.CONFIGADMIN.VERSION@,org.eclipse.equinox.cm_@EQUINOX.CONFIGADMIN.VERSION@.jar,2,true
+org.eclipse.virgo.medic.core,@MEDIC.VERSION@,org.eclipse.virgo.medic.core_@MEDIC.VERSION@.jar,2,true
+org.eclipse.virgo.util.osgi,@UTIL.VERSION@,org.eclipse.virgo.util.osgi_@UTIL.VERSION@.jar,2,true
+org.apache.felix.eventadmin,@FELIX.EVENTADMIN.VERSION@,org.apache.felix.eventadmin_@FELIX.EVENTADMIN.VERSION@.jar,2,true
+org.eclipse.virgo.util.common,@UTIL.VERSION@,org.eclipse.virgo.util.common_@UTIL.VERSION@.jar,2,true
+org.eclipse.virgo.util.io,@UTIL.VERSION@,org.eclipse.virgo.util.io_@UTIL.VERSION@.jar,2,true
+org.eclipse.virgo.util.jmx,@UTIL.VERSION@,org.eclipse.virgo.util.jmx_@UTIL.VERSION@.jar,2,false
+org.eclipse.virgo.util.math,@UTIL.VERSION@,org.eclipse.virgo.util.math_@UTIL.VERSION@.jar,2,true
+org.eclipse.virgo.util.parser.manifest,@UTIL.VERSION@,org.eclipse.virgo.util.parser.manifest_@UTIL.VERSION@.jar,2,true
+com.springsource.org.apache.commons.codec,1.3.0,com.springsource.org.apache.commons.codec_1.3.0.jar,2,true
+com.springsource.org.apache.commons.httpclient,3.1.0,com.springsource.org.apache.commons.httpclient_3.1.0.jar,2,true
+org.eclipse.virgo.repository,@REPOSITORY.VERSION@,org.eclipse.virgo.repository_@REPOSITORY.VERSION@.jar,2,true
+org.springframework.aop,@SPRING.VERSION@,org.springframework.aop_@SPRING.VERSION@.jar,2,false
+org.springframework.asm,@SPRING.VERSION@,org.springframework.asm_@SPRING.VERSION@.jar,2,false
+org.springframework.expression,@SPRING.VERSION@,org.springframework.expression_@SPRING.VERSION@.jar,2,false
+org.springframework.beans,@SPRING.VERSION@,org.springframework.beans_@SPRING.VERSION@.jar,2,false
+org.springframework.core,@SPRING.VERSION@,org.springframework.core_@SPRING.VERSION@.jar,2,false
+org.springframework.context,@SPRING.VERSION@,org.springframework.context_@SPRING.VERSION@.jar,2,false
+org.eclipse.virgo.kernel.core,@KERNEL.VERSION@,org.eclipse.virgo.kernel.core_@KERNEL.VERSION@.jar,2,true
+org.eclipse.virgo.kernel.agent.dm,@KERNEL.VERSION@,org.eclipse.virgo.kernel.agent.dm_@KERNEL.VERSION@.jar,2,true
+org.springframework.osgi.core,@SPRING.DM.VERSION@,org.springframework.osgi.core_@SPRING.DM.VERSION@.jar,2,false
+org.springframework.osgi.extender,@SPRING.DM.VERSION@,org.springframework.osgi.extender_@SPRING.DM.VERSION@.jar,2,true
+org.springframework.osgi.io,@SPRING.DM.VERSION@,org.springframework.osgi.io_@SPRING.DM.VERSION@.jar,2,false
+com.springsource.org.aopalliance,1.0.0,com.springsource.org.aopalliance_1.0.0.jar,2,false
+org.eclipse.virgo.kernel.artifact,@KERNEL.VERSION@,org.eclipse.virgo.kernel.artifact_@KERNEL.VERSION@.jar,2,true
+org.eclipse.virgo.kernel.services,@KERNEL.VERSION@,org.eclipse.virgo.kernel.services_@KERNEL.VERSION@.jar,2,true
+org.eclipse.virgo.kernel.osgi,@KERNEL.VERSION@,org.eclipse.virgo.kernel.osgi_@KERNEL.VERSION@.jar,2,true
+org.eclipse.virgo.kernel.deployer,@KERNEL.VERSION@,org.eclipse.virgo.kernel.deployer_@KERNEL.VERSION@.jar,2,true
+org.eclipse.virgo.kernel.model,@KERNEL.VERSION@,org.eclipse.virgo.kernel.model_@KERNEL.VERSION@.jar,2,true
+org.eclipse.virgo.kernel.kerneldmfragment,@KERNEL.VERSION@,org.eclipse.virgo.kernel.kerneldmfragment_@KERNEL.VERSION@.jar,2,false
+org.eclipse.virgo.kernel.shell,@KERNEL.VERSION@,org.eclipse.virgo.kernel.shell_@KERNEL.VERSION@.jar,2,true

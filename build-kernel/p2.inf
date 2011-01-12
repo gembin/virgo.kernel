@@ -6,7 +6,7 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #
 # Contributors:
-#    Hristo Iliev, SAP AG - initial contribution
+# Hristo Iliev, SAP AG - initial contribution
 ################################################################################
 
 properties.1.name = org.eclipse.equinox.p2.type.category

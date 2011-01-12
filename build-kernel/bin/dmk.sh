@@ -129,13 +129,13 @@ then
 		rm -rf $KERNEL_HOME/work
 		rm -rf $KERNEL_HOME/serviceability
 
-		LAUNCH_OPTS="$LAUNCH_OPTS -Fosgi.clean=true"
+		LAUNCH_OPTS="$LAUNCH_OPTS -Dosgi.clean=true"
 	fi
 	
 	if [ "$SHELL_FLAG" ]
 	then
 	    echo "Warning: Kernel shell not supported; -shell option ignored."
-		# LAUNCH_OPTS="$LAUNCH_OPTS -Forg.eclipse.virgo.kernel.shell.local=true"
+		# LAUNCH_OPTS="$LAUNCH_OPTS -Dorg.eclipse.virgo.kernel.shell.local=true"
 	fi
 	
 	# Set the required permissions on the JMX configuration files
@@ -170,15 +170,18 @@ then
 		-Dorg.eclipse.virgo.kernel.authentication.file=$CONFIG_DIR/org.eclipse.virgo.kernel.users.properties \
 		-Djava.io.tmpdir=$TMP_DIR \
 		-Dorg.eclipse.virgo.kernel.home=$KERNEL_HOME \
-		-classpath $CLASSPATH \
-		org.eclipse.virgo.osgi.launcher.Launcher \
-	    -config $KERNEL_HOME/lib/org.eclipse.virgo.kernel.launch.properties \
-		-Forg.eclipse.virgo.kernel.home=$KERNEL_HOME \
-		-Forg.eclipse.virgo.kernel.config=$CONFIG_DIR \
-		-Fosgi.configuration.area=$KERNEL_HOME/work/osgi/configuration \
-		-Fosgi.java.profile="file:$KERNEL_HOME/lib/java6-server.profile" \
+		-Declipse.ignoreApp=true \
+		-Dosgi.framework.activeThreadType=normal \
+		-Dorg.eclipse.virgo.kernel.config=$CONFIG_DIR \
+		-Dosgi.configuration.area=$KERNEL_HOME/work/osgi/configuration \
+		-Dosgi.java.profile="file:$KERNEL_HOME/lib/java6-server.profile" \
 		$LAUNCH_OPTS \
-		$ADDITIONAL_ARGS
+		$ADDITIONAL_ARGS \
+		-jar lib/org.eclipse.equinox.launcher_@EQUINOX.LAUNCHER.VERSION@.jar *.jar \
+		-install lib \
+		-data work \
+		-configuration config \
+		-noExit
 elif [ "$COMMAND" = "stop" ]
 then
 

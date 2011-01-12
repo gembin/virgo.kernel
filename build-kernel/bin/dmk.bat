@@ -23,7 +23,7 @@ rem Select command we are to run
   rem First parm is command
     set COMMAND=%~1
     rem Rest are parameters - shift done in subroutines
-   
+
   rem Switch on COMMAND in {"start","stop"}
 
     if "%COMMAND%" == "start" (
@@ -125,7 +125,7 @@ rem ------------------------------
 
   :endStartOptionLoop
 
-  
+
   rem Adjust permissions if necessary
     cscript //NoLogo "%KERNEL_HOME%\bin\jmxPermissions.vbs" "%CONFIG_DIR%\"
 
@@ -137,7 +137,7 @@ rem ------------------------------
     if not "%CLEAN_FLAG%"=="" (
       rmdir /Q /S "%KERNEL_HOME%\serviceability"
 	  rmdir /Q /S "%KERNEL_HOME%\work"
-      set LAUNCH_OPTS=%LAUNCH_OPTS% -Fosgi.clean=true
+      set LAUNCH_OPTS=%LAUNCH_OPTS% -Dosgi.clean=true
     )
 
   rem ensure that the tmp directory exists:
@@ -145,43 +145,48 @@ rem ------------------------------
   if not exist "%TMP_DIR%" mkdir "%TMP_DIR%"
 
   rem do Shell work:
-    if not "%SHELL_FLAG%"=="" ( 
+    if not "%SHELL_FLAG%"=="" (
       echo "Warning: Kernel shell not supported; -shell option ignored."
-      rem set LAUNCH_OPTS=%LAUNCH_OPTS% -Forg.eclipse.virgo.kernel.shell.local=true
+      rem set LAUNCH_OPTS=%LAUNCH_OPTS% -Dorg.eclipse.virgo.kernel.shell.local=true
     )
 
   rem Set JMX options
-    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.port=%JMX_PORT% 
-    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.authenticate=true 
-    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.login.config=virgo-kernel 
-    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.access.file="%CONFIG_DIR%\org.eclipse.virgo.kernel.jmxremote.access.properties" 
-    set JMX_OPTS=%JMX_OPTS% -Djavax.net.ssl.keyStore="%KEYSTORE_PATH%" 
-    set JMX_OPTS=%JMX_OPTS% -Djavax.net.ssl.keyStorePassword=%KEYSTORE_PASSWORD% 
-    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.ssl=true 
+    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.port=%JMX_PORT%
+    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.authenticate=true
+    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.login.config=virgo-kernel
+    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.access.file="%CONFIG_DIR%\org.eclipse.virgo.kernel.jmxremote.access.properties"
+    set JMX_OPTS=%JMX_OPTS% -Djavax.net.ssl.keyStore="%KEYSTORE_PATH%"
+    set JMX_OPTS=%JMX_OPTS% -Djavax.net.ssl.keyStorePassword=%KEYSTORE_PASSWORD%
+    set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.ssl=true
     set JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.ssl.need.client.auth=false
 
   rem Run the server
-    
+
     rem Marshall parameters
     set KERNEL_JAVA_PARMS=%JAVA_OPTS% %DEBUG_OPTS% %JMX_OPTS%
 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -XX:+HeapDumpOnOutOfMemoryError 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -XX:ErrorFile="%KERNEL_HOME%\serviceability\error.log" 
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -XX:+HeapDumpOnOutOfMemoryError
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -XX:ErrorFile="%KERNEL_HOME%\serviceability\error.log"
     set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -XX:HeapDumpPath="%KERNEL_HOME%\serviceability\heap_dump.hprof"
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Djava.security.auth.login.config="%CONFIG_DIR%\org.eclipse.virgo.kernel.authentication.config" 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dorg.eclipse.virgo.kernel.authentication.file="%CONFIG_DIR%\org.eclipse.virgo.kernel.users.properties" 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Djava.io.tmpdir="%TMP_DIR%" 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dorg.eclipse.virgo.kernel.home="%KERNEL_HOME%" 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -classpath "%CLASSPATH%" 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% org.eclipse.virgo.osgi.launcher.Launcher 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -config "%KERNEL_HOME%\lib\org.eclipse.virgo.kernel.launch.properties" 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Forg.eclipse.virgo.kernel.home="%KERNEL_HOME%" 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Forg.eclipse.virgo.kernel.config="%CONFIG_DIR%" 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Fosgi.configuration.area="%KERNEL_HOME%\work\osgi\configuration" 
-    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Fosgi.java.profile="file:%KERNEL_HOME%\lib\java6-server.profile" 
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Djava.security.auth.login.config="%CONFIG_DIR%\org.eclipse.virgo.kernel.authentication.config"
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dorg.eclipse.virgo.kernel.authentication.file="%CONFIG_DIR%\org.eclipse.virgo.kernel.users.properties"
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Djava.io.tmpdir="%TMP_DIR%"
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dorg.eclipse.virgo.kernel.home="%KERNEL_HOME%"
+	set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Declipse.ignoreApp=true
+	set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dosgi.framework.activeThreadType=normal
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dorg.eclipse.virgo.kernel.home="%KERNEL_HOME%"
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dorg.eclipse.virgo.kernel.config="%CONFIG_DIR%"
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dosgi.configuration.area="%KERNEL_HOME%\work\osgi\configuration"
+    set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dosgi.java.profile="file:%KERNEL_HOME%\lib\java6-server.profile"
     set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% %LAUNCH_OPTS%
     set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% %ADDITIONAL_ARGS%
-	
+	set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -jar lib/org.eclipse.equinox.launcher*.jar *.jar
+	set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -install lib
+	set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -data work
+	set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -configuration config
+	set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -noExit
+	set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -console
+
     rem Now run it
 	PUSHD %KERNEL_HOME%
     "%JAVA_HOME%\bin\java" %KERNEL_JAVA_PARMS%
@@ -191,7 +196,7 @@ goto :eof
 
 rem ------------------------------
 :doStopCommand
-  
+
   shift
   rem The shift must be here :()
 
@@ -204,13 +209,13 @@ rem ------------------------------
   rem Loop through options
   :stopOptionLoop
 
-  if "%~1"=="" goto endStopOptionLoop  
+  if "%~1"=="" goto endStopOptionLoop
   if "%~1"=="-truststore" goto truststoreStop
   if "%~1"=="-truststorePassword" goto truststorePasswordStop
-  if "%~1"=="-configDir" goto configDirStop 
-  
+  if "%~1"=="-configDir" goto configDirStop
+
   set OTHER_ARGS=%OTHER_ARGS% "%~1"
-    
+
   :continueStopOptionLoop
   shift
   goto stopOptionLoop

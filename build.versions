@@ -2,6 +2,8 @@
 org.apache.felix.eventadmin=1.0.0
 org.eclipse.osgi.services=3.3.0.v20101018
 org.eclipse.equinox.cm=1.0.200.v20100520
+org.eclipse.equinox.launcher=1.1.0.v20100507
+org.eclipse.equinox.simpleconfigurator=1.0.200.v20100503
 org.aspectj=1.6.6.RELEASE
 org.eclipse.osgi=3.7.0.v20101022
 org.eclipse.virgo.medic=2.2.0.D-20101207150849

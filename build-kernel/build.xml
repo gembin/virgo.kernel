@@ -52,10 +52,10 @@
 		<ivy:retrieve resolveId="copy.path" pattern="${package.output.dir}/lib/[artifact]-[revision].[ext]" conf="lib" type="jar"/>
 
 		<ivy:resolve resolveId="copy.path" file="${basedir}/kernel-ivy.xml" transitive="true"/>
-		<ivy:retrieve resolveId="copy.path" pattern="${package.output.dir}/lib/kernel/[artifact]-[revision].[ext]" conf="lib-kernel" type="jar"/>
+		<ivy:retrieve resolveId="copy.path" pattern="${package.output.dir}/${user.region.dir}/[artifact]-[revision].[ext]" conf="lib-kernel" type="jar"/>
 		
 		<ivy:resolve resolveId="copy.path" file="${basedir}/kernel-ivy.xml" transitive="true"/>
-		<ivy:retrieve resolveId="copy.path" pattern="${package.output.dir}/repository/ext/[artifact]-[revision].[ext]" conf="repository-ext" type="jar"/>
+		<ivy:retrieve resolveId="copy.path" pattern="${package.output.dir}/${repository.ext.dir}/[artifact]-[revision].[ext]" conf="repository-ext" type="jar"/>
 
 		<mkdir dir="${package.output.dir}/config"/>
 		<mkdir dir="${package.output.dir}/work"/>
@@ -74,50 +74,43 @@
 
 		<copy todir="${package.output.dir}/lib" failonerror="false">
 			<fileset dir="${basedir}/lib"/>
-			<filterset>
-				<filter token="ASPECTJ.VERSION" value="${org.aspectj}"/>
-				<filter token="OSGI.SERVICES.VERSION" value="${org.eclipse.osgi.services}"/>
-				<filter token="EQUINOX.CONFIGADMIN.VERSION" value="${org.eclipse.equinox.cm}"/>
-				<filter token="FELIX.EVENTADMIN.VERSION" value="${org.apache.felix.eventadmin}"/>
-				<filter token="KERNEL.VERSION" value="${bundle.version}"/>
-				<filter token="MEDIC.VERSION" value="${org.eclipse.virgo.medic}"/>
-				<filter token="REPOSITORY.VERSION" value="${org.eclipse.virgo.repository}"/>
-				<filter token="SLF4J.VERSION" value="${org.slf4j}"/>
-				<filter token="SPRING.DM.VERSION" value="${org.springframework.osgi}"/>	
-				<filter token="SPRING.VERSION" value="${org.springframework}"/>
-				<filter token="UTIL.VERSION" value="${org.eclipse.virgo.util}"/>
-			</filterset>
 		</copy>
 
 		<copy todir="${package.output.dir}/config" failonerror="false">
 			<fileset dir="${basedir}/config" excludes="keystore"/>
 			<filterset>
+				<!--VERSIONS-->
 				<filter token="ASPECTJ.VERSION" value="${org.aspectj}"/>
+				<filter token="OSGI.FRAMEWORK.VERSION" value="${org.eclipse.osgi}"/>
 				<filter token="OSGI.SERVICES.VERSION" value="${org.eclipse.osgi.services}"/>
 				<filter token="EQUINOX.CONFIGADMIN.VERSION" value="${org.eclipse.equinox.cm}"/>
+				<filter token="EQUINOX.SIMPLECONFIGURATOR.VERSION" value="${org.eclipse.equinox.simpleconfigurator}"/>
 				<filter token="FELIX.EVENTADMIN.VERSION" value="${org.apache.felix.eventadmin}"/>
 				<filter token="KERNEL.VERSION" value="${bundle.version}"/>
 				<filter token="MEDIC.VERSION" value="${org.eclipse.virgo.medic}"/>
 				<filter token="REPOSITORY.VERSION" value="${org.eclipse.virgo.repository}"/>
+				<filter token="OSGI.EXTENSIONS.VERSION" value="${org.eclipse.virgo.osgi}"/>
 				<filter token="SLF4J.VERSION" value="${org.slf4j}"/>
-				<filter token="SPRING.DM.VERSION" value="${org.springframework.osgi}"/>	
+				<filter token="SPRING.DM.VERSION" value="${org.springframework.osgi}"/>
 				<filter token="SPRING.VERSION" value="${org.springframework}"/>
 				<filter token="UTIL.VERSION" value="${org.eclipse.virgo.util}"/>
+				<!--LOCATIONS-->
+				<filter token="REPOSITORY.EXT.DIR" value="${repository.ext.dir}"/>
 			</filterset>
 		</copy>
-		
-		<copy todir="${package.output.dir}/repository/ext" failonerror="false">
+
+		<copy todir="${package.output.dir}/${repository.ext.dir}" failonerror="false">
 			<fileset dir="${basedir}/repository/ext"/>
 		</copy>
-		
-		<copy todir="${package.output.dir}/repository/ext" failonerror="false">
-			<fileset dir="${package.output.dir}/lib/kernel">
+
+		<copy todir="${package.output.dir}/${repository.ext.dir}" failonerror="false">
+			<fileset dir="${package.output.dir}/${user.region.dir}">
 				<include name="org.eclipse.virgo.kernel.agent.dm-*.jar"/>
 			</fileset>
 		</copy>
-		
-		<move todir="${package.output.dir}/repository/ext" failonerror="false">
-			<fileset dir="${package.output.dir}/lib/kernel">
+
+		<move todir="${package.output.dir}/${repository.ext.dir}" failonerror="false">
+			<fileset dir="${package.output.dir}/${user.region.dir}">
 				<include name="org.eclipse.virgo.kernel.dmfragment-*.jar"/>
 				<include name="org.eclipse.virgo.kernel.deployer.dm-*.jar"/>
 			</fileset>
@@ -162,91 +155,76 @@
 		<antcall target="test.post"/>
 	</target>
 
-    <target name="package.resources" depends="package"
-            description="Creates a special bundle containing Virgo entities that are not bundles">
+    <target name="package.resources" depends="package" description="Creates a special bundle containing Virgo entities that are not bundles">
         <property name="meta.inf" value="${distro.res}/META-INF"/>
-        <property name="content" value="${distro.res}/root_content"/>
         <property name="resources.jar" value="${package.output.dir}/lib/org.eclipse.virgo.kernel.resources.jar"/>
         <zip destfile="${resources.jar}">
             <zipfileset dir="${distro.res}"/>
-            <zipfileset dir="${package.dir}/${package.basename}"
-                        includes="bin/*.sh" filemode="755"/>
-            <zipfileset dir="${package.dir}/${package.basename}"
-                        includes="config/org.eclipse.virgo.kernel.jmxremote.access.properties" filemode="600"/>
-            <zipfileset dir="${package.dir}/${package.basename}">
-                <exclude name="bin/*.sh"/>
+
+            <!--Scripts in BIN-->
+            <zipfileset dir="${package.dir}/${package.basename}/bin" includes="*.sh" prefix="bin" filemode="755"/>
+            <zipfileset dir="${package.dir}/${package.basename}/bin" prefix="bin">
+                <include name="*.bat"/>
+                <include name="*.vbs"/>
+            </zipfileset>
+
+            <!--Configuration files-->
+            <zipfileset dir="${package.dir}/${package.basename}/config"
+                        includes="org.eclipse.virgo.kernel.jmxremote.access.properties" prefix="config" filemode="600"/>
+            <zipfileset dir="${package.dir}/${package.basename}/config" prefix="config">
+                <include name="*"/>
                 <exclude name="config/org.eclipse.virgo.kernel.jmxremote.access.properties"/>
-                <exclude name="**/*.jar"/>
+            </zipfileset>
+
+            <!--LIB files-->
+            <zipfileset dir="${package.dir}/${package.basename}/lib" prefix="lib">
+                <include name=".version"/>
+                <include name="java6-server.profile"/>
+                <include name="org.eclipse.virgo.kernel.userregion.springdm.plan"/>
+            </zipfileset>
+
+            <!--Additional files-->
+            <zipfileset dir="${package.dir}/${package.basename}">
+                <include name="about_files/*"/>
+                <include name="*.html"/>
             </zipfileset>
         </zip>
     </target>
 
-    <target name="p2.publish" depends="package.resources, p2.extract-publisher"
-            description="Publishes bundles, features and product">
+    <target name="p2.publish" depends="package.resources, p2.extract-publisher" description="Publishes bundles, features and product">
         <java jar="${p2.launcher.jar}" fork="true" taskname="p2bundles" failonerror="true" maxmemory="256m">
             <arg line="-application org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher"/>
             <arg line="-metadataRepository ${p2.repo.url}"/>
             <arg line="-artifactRepository ${p2.repo.url}"/>
-            <arg line="-bundles ${package.output.dir}/lib,${package.output.dir}/repository/ext"/>
+            <arg line="-bundles ${package.output.dir}/lib"/>
             <arg line="-publishArtifacts"/>
             <arg line="-configs all"/>
         </java>
+        <java jar="${p2.launcher.jar}" fork="true" taskname="p2product" failonerror="true" maxmemory="256m">
+            <arg line="-application org.eclipse.equinox.p2.publisher.ProductPublisher"/>
+            <arg line="-metadataRepository ${p2.repo.url}"/>
+            <arg line="-artifactRepository ${p2.repo.url}"/>
+            <arg line="-productFile ${product.file}"/>
+            <arg line="-append"/>
+            <arg line="-publishArtifacts"/>
+            <arg line="-flavor tooling"/>
+            <arg line="-configs all"/>
+        </java>
 
-        <sshexec host="build.eclipse.org" 
-                username="${eclipse.buildId}" 
-                keyfile="${key.file}" 
+        <sshexec host="build.eclipse.org"
+                username="${eclipse.buildId}"
+                keyfile="${key.file}"
                 passphrase="${passphrase}"
                 command="mkdir -pv /opt/public/rt/virgo/update-site/${release.type}/${build.stamp}"/>
 
-        <scp todir="${eclipse.buildId}@build.eclipse.org:/opt/public/rt/virgo/update-site/${release.type}/${build.stamp}/" 
+        <scp todir="${eclipse.buildId}@build.eclipse.org:/opt/public/rt/virgo/update-site/${release.type}/${build.stamp}/"
                 keyfile="${key.file}"
                 passphrase="${passphrase}">
             <fileset dir="${publishing.dir}"/>
         </scp>
-        
-        
-        
-        <!-- <java jar="${p2.launcher.jar}" fork="true" taskname="p2product" failonerror="true" maxmemory="256m">
-                 <arg line="-application org.eclipse.equinox.p2.publisher.ProductPublisher"/>
-                 <arg line="-metadataRepository ${p2.repo.url}"/>
-                 <arg line="-artifactRepository ${p2.repo.url}"/>
-                 <arg line="-productFile ${product.file}"/>
-                 <arg line="-append"/>
-                 <arg line="-publishArtifacts"/>
-                 <arg line="-flavor tooling"/>
-                 <arg line="-configs all"/>
-             </java>
-             <java jar="${p2.launcher.jar}" fork="true" taskname="p2product" failonerror="true" maxmemory="256m">
-                 <arg line="-application org.eclipse.equinox.p2.publisher.ProductPublisher"/>
-                 <arg line="-metadataRepository ${p2.repo.url}"/>
-                 <arg line="-artifactRepository ${p2.repo.url}"/>
-                 <arg line="-productFile ${lib.product.file}"/>
-                 <arg line="-append"/>
-                 <arg line="-publishArtifacts"/>
-                 <arg line="-flavor tooling"/>
-                 <arg line="-configs all"/>
-             </java>
-             <java jar="${p2.launcher.jar}" fork="true" taskname="p2product" failonerror="true" maxmemory="256m">
-                 <arg line="-application org.eclipse.equinox.p2.publisher.ProductPublisher"/>
-                 <arg line="-metadataRepository ${p2.repo.url}"/>
-                 <arg line="-artifactRepository ${p2.repo.url}"/>
-                 <arg line="-productFile ${lib.kernel.product.file}"/>
-                 <arg line="-append"/>
-                 <arg line="-publishArtifacts"/>
-                 <arg line="-flavor tooling"/>
-                 <arg line="-configs all"/>
-             </java>
-             <java jar="${p2.launcher.jar}" fork="true" taskname="p2product" failonerror="true" maxmemory="256m">
-                 <arg line="-application org.eclipse.equinox.p2.publisher.ProductPublisher"/>
-                 <arg line="-metadataRepository ${p2.repo.url}"/>
-                 <arg line="-artifactRepository ${p2.repo.url}"/>
-                 <arg line="-productFile ${repository.ext.product.file}"/>
-                 <arg line="-append"/>
-                 <arg line="-publishArtifacts"/>
-                 <arg line="-flavor tooling"/>
-                 <arg line="-configs all"/>
-             </java> -->
-             <delete dir="${p2.publishing.dir}" excludes="p2agent.zip" includeemptydirs="true" quiet="true"/>
+
+        <!--TODO-->
+        <delete dir="${p2.publishing.dir}" excludes="p2agent.zip" includeemptydirs="true" quiet="true"/>
     </target>
 
 </project>
