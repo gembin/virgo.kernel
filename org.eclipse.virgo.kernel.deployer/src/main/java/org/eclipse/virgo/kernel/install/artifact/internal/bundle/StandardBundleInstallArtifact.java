@@ -49,8 +49,6 @@ import org.eclipse.virgo.util.osgi.manifest.BundleManifestFactory;
 import org.eclipse.virgo.util.osgi.manifest.BundleSymbolicName;
 import org.eclipse.virgo.util.osgi.manifest.ExportedPackage;
 import org.osgi.framework.Bundle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * {@link StandardBundleInstallArtifact} is the default implementation of {@link BundleInstallArtifact}.
@@ -62,8 +60,6 @@ import org.slf4j.LoggerFactory;
  * 
  */
 final class StandardBundleInstallArtifact extends AbstractInstallArtifact implements BundleInstallArtifact {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String MANIFEST_ENTRY_NAME = "/META-INF/MANIFEST.MF";
 	

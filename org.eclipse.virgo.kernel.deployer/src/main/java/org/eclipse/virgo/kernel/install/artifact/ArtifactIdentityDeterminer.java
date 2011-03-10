@@ -30,6 +30,8 @@ public interface ArtifactIdentityDeterminer {
     public static final String PLAN_TYPE = "plan";
 
     public static final String CONFIGURATION_TYPE = "configuration";
+    
+    public static final String FACTORY_CONFIGURATION_TYPE = "factory-configuration";
 
     public static final String PAR_TYPE = "par";
 

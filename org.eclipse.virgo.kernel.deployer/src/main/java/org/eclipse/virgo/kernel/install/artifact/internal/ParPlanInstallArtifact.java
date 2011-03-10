@@ -15,10 +15,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
 import org.eclipse.virgo.kernel.artifact.fs.ArtifactFS;
 import org.eclipse.virgo.kernel.artifact.fs.ArtifactFSEntry;
@@ -66,8 +62,6 @@ final class ParPlanInstallArtifact extends StandardPlanInstallArtifact {
 
     private final List<Tree<InstallArtifact>> childInstallArtifacts;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ParPlanInstallArtifact.class);
-
     public ParPlanInstallArtifact(@NonNull ArtifactIdentity identity, @NonNull ArtifactStorage artifactStorage,
         @NonNull ArtifactStateMonitor artifactStateMonitor, @NonNull ScopeServiceRepository scopeServiceRepository,
         @NonNull ScopeFactory scopeFactory, @NonNull EventLogger eventLogger, @NonNull InstallArtifactTreeFactory bundleInstallArtifactTreeFactory,
@@ -107,7 +101,7 @@ final class ParPlanInstallArtifact extends StandardPlanInstallArtifact {
                     ArtifactIdentity scopedIdentity = ArtifactIdentityScoper.scopeArtifactIdentity(artifactIdentity);
                     childArtifacts.add(new OrderedPair<ArtifactIdentity, ArtifactFSEntry>(scopedIdentity, child));
                 } else {
-                    LOGGER.warn("Skipping entry " + name + " as it is not of a recognized type");
+                    logger.warn("Skipping entry " + name + " as it is not of a recognized type");
                 }
             }
         }
@@ -136,7 +130,7 @@ final class ParPlanInstallArtifact extends StandardPlanInstallArtifact {
             }
 
             if (subTree == null) {
-                LOGGER.warn("Skipping " + identity + " as " + identity.getType() + " artifacts are not supported within a PAR");
+                logger.warn("Skipping " + identity + " as " + identity.getType() + " artifacts are not supported within a PAR");
             } else {
                 childInstallArtifacts.add(subTree);
             }

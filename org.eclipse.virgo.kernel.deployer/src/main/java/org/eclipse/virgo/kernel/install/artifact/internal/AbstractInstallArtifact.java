@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractInstallArtifact implements InstallArtifact {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Object monitor = new Object();
 

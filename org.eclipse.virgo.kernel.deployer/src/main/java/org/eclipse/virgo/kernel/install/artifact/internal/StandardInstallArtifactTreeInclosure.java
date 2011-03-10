@@ -13,15 +13,9 @@ package org.eclipse.virgo.kernel.install.artifact.internal;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.eclipse.virgo.kernel.osgi.framework.OsgiFrameworkUtils;
-import org.eclipse.virgo.kernel.osgi.framework.OsgiServiceHolder;
 
 import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
 import org.eclipse.virgo.kernel.deployer.core.DeployerLogEvents;
@@ -34,12 +28,17 @@ import org.eclipse.virgo.kernel.install.artifact.InstallArtifact;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeInclosure;
 import org.eclipse.virgo.kernel.install.artifact.internal.scoping.ArtifactIdentityScoper;
+import org.eclipse.virgo.kernel.osgi.framework.OsgiFrameworkUtils;
+import org.eclipse.virgo.kernel.osgi.framework.OsgiServiceHolder;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.medic.eventlog.EventLogger;
 import org.eclipse.virgo.repository.Repository;
 import org.eclipse.virgo.repository.RepositoryAwareArtifactDescriptor;
 import org.eclipse.virgo.util.common.Tree;
 import org.eclipse.virgo.util.osgi.VersionRange;
+import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link StandardInstallArtifactTreeInclosure} is a default implementation of {@link InstallArtifactTreeInclosure} that
@@ -65,6 +64,9 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
 
     private final ArtifactIdentityDeterminer artifactIdentityDeterminer;
 
+    // TODO: these values can potentially be injected or looked up dynamically. Validate
+    private final List<ArtifactSpecificationBridge> artifactSpecificationBridges;
+
     public StandardInstallArtifactTreeInclosure(@NonNull ArtifactStorageFactory artifactStorageFactory, @NonNull BundleContext bundleContext,
         @NonNull Repository repository, @NonNull EventLogger eventLogger, @NonNull ArtifactIdentityDeterminer artifactIdentityDeterminer) {
         this.repository = repository;
@@ -72,11 +74,15 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
         this.eventLogger = eventLogger;
         this.bundleContext = bundleContext;
         this.artifactIdentityDeterminer = artifactIdentityDeterminer;
+
+        this.artifactSpecificationBridges = Arrays.asList(new FactoryConfigArtifactSpecificationBridge(),
+            new StandardRepositoryArtifactSpecificationBridge(this.repository));
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public Tree<InstallArtifact> createInstallTree(ArtifactSpecification specification) throws DeploymentException {
         return createInstallTree(specification, null);
     }
@@ -84,21 +90,30 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
     /**
      * {@inheritDoc}
      */
+    @Override
     public Tree<InstallArtifact> createInstallTree(ArtifactSpecification specification, String scopeName) throws DeploymentException {
         String type = specification.getType();
         String name = specification.getName();
         VersionRange versionRange = specification.getVersionRange();
-        RepositoryAwareArtifactDescriptor artifactDescriptor = this.repository.get(type, name, versionRange);
+
+        RepositoryAwareArtifactDescriptor artifactDescriptor = null;
+        for (ArtifactSpecificationBridge bridge : this.artifactSpecificationBridges) {
+            artifactDescriptor = bridge.generateArtifactDescriptor(specification);
+            if (artifactDescriptor != null) {
+                break;
+            }
+        }
+
         if (artifactDescriptor == null) {
             this.eventLogger.log(DeployerLogEvents.ARTIFACT_NOT_FOUND, type, name, versionRange, this.repository.getName());
             throw new DeploymentException(type + " '" + name + "' version '" + versionRange + "' not found");
         }
 
         URI artifactURI = artifactDescriptor.getUri();
-        
+
         ArtifactIdentity identity = new ArtifactIdentity(type, name, artifactDescriptor.getVersion(), scopeName);
-        identity = ArtifactIdentityScoper.scopeArtifactIdentity(identity);       
-        
+        identity = ArtifactIdentityScoper.scopeArtifactIdentity(identity);
+
         ArtifactStorage artifactStorage = this.artifactStorageFactory.create(new File(artifactURI), identity);
 
         Tree<InstallArtifact> installArtifactTree = constructInstallArtifactTree(identity, specification.getProperties(), artifactStorage,
@@ -109,6 +124,7 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
     /**
      * {@inheritDoc}
      */
+    @Override
     public Tree<InstallArtifact> createInstallTree(File sourceFile) throws DeploymentException {
 
         if (!sourceFile.exists()) {
@@ -124,7 +140,7 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
             return installArtifactTree;
         } catch (DeploymentException e) {
             if (artifactStorage != null) {
-              artifactStorage.delete();
+                artifactStorage.delete();
             }
             throw e;
         } catch (Exception e) {
@@ -174,6 +190,7 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
     /**
      * {@inheritDoc}
      */
+    @Override
     public Tree<InstallArtifact> recoverInstallTree(File sourceFile, DeploymentOptions deploymentOptions) {
         ArtifactStorage artifactStorage = null;
         if (deploymentOptions.getRecoverable() && (!deploymentOptions.getDeployerOwned() || sourceFile.exists())) {
@@ -201,6 +218,7 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
     /**
      * {@inheritDoc}
      */
+    @Override
     public void updateStagingArea(File sourceFile, ArtifactIdentity identity) throws DeploymentException {
         this.artifactStorageFactory.create(sourceFile, identity).synchronize();
     }

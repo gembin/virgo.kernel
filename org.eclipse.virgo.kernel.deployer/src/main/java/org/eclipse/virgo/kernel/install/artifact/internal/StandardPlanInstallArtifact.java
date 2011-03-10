@@ -30,8 +30,6 @@ import org.eclipse.virgo.kernel.shim.scope.Scope;
 import org.eclipse.virgo.kernel.shim.scope.ScopeFactory;
 import org.eclipse.virgo.medic.eventlog.EventLogger;
 import org.eclipse.virgo.util.common.Tree;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * {@link StandardPlanInstallArtifact} is the standard implementation of {@link PlanInstallArtifact}.
@@ -44,8 +42,6 @@ import org.slf4j.LoggerFactory;
  */
 public class StandardPlanInstallArtifact extends AbstractInstallArtifact implements PlanInstallArtifact {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(StandardPlanInstallArtifact.class);
-
     private final Object monitor = new Object();
 
     private final ScopeServiceRepository scopeServiceRepository;
@@ -107,7 +103,7 @@ public class StandardPlanInstallArtifact extends AbstractInstallArtifact impleme
         // The SignalJunction constructor will drive the signal if numChildren == 0.
         AbortableSignalJunction signalJunction = new AbortableSignalJunction(signal, numChildren);
         
-        LOGGER.debug("Created {} that will notify {} to track start of {}", new Object[] {signalJunction, signal, this});
+        logger.debug("Created {} that will notify {} to track start of {}", new Object[] {signalJunction, signal, this});
         
         List<AbortableSignal> subSignals = signalJunction.getSignals();
 
@@ -115,7 +111,7 @@ public class StandardPlanInstallArtifact extends AbstractInstallArtifact impleme
             InstallArtifact childArtifact = children.get(childIndex).getValue();
             AbortableSignal subSignal = subSignals.get(childIndex);
             
-            LOGGER.debug("Starting {} with signal {} from {}", new Object[] {childArtifact, subSignal, signalJunction});
+            logger.debug("Starting {} with signal {} from {}", new Object[] {childArtifact, subSignal, signalJunction});
             
             childArtifact.start(subSignal);
         }

@@ -65,9 +65,16 @@
 	<beans:bean id="userInstalledTaggingTransformer"
 		class="org.eclipse.virgo.kernel.install.pipeline.stage.transform.internal.UserInstalledTaggingTransformer" />
 
+    <beans:bean id="factoryConfigurationResolver" class="org.eclipse.virgo.kernel.deployer.core.internal.FactoryConfigurationResolver">
+        <beans:constructor-arg ref="artifactStorageFactory"/>
+        <beans:constructor-arg ref="configInstallArtifactTreeFactory"/>
+    </beans:bean>
+
 	<service
 		interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
 		ref="planResolver" ranking="1000" />
+	<service interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
+        ref="planResolver" ranking="1050" />
 	<service
 		interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
 		ref="bundleManifestVersionUpgrader" ranking="2000" />
@@ -196,12 +203,14 @@
 		<beans:constructor-arg ref="eventLogger" />
 	</beans:bean>
 
-	<reference id="kernelConfig" interface="org.eclipse.virgo.kernel.core.KernelConfig"/>
-	
+	<reference id="kernelConfig" interface="org.eclipse.virgo.kernel.core.KernelConfig" />
+
 	<beans:bean id="deployerConfig"
 		class="org.eclipse.virgo.kernel.deployer.core.internal.StandardDeployerConfiguration">
-		<beans:constructor-arg value="#{kernelConfig.getProperty('deployer.timeout')}" />
-		<beans:constructor-arg value="#{kernelConfig.getProperty('deployer.pickupDirectory')}" />
+		<beans:constructor-arg
+			value="#{kernelConfig.getProperty('deployer.timeout')}" />
+		<beans:constructor-arg
+			value="#{kernelConfig.getProperty('deployer.pickupDirectory')}" />
 	</beans:bean>
 
 	<service ref="deployerConfig"
@@ -219,7 +228,7 @@
 	<reference id="packageAdminUtil"
 		interface="org.eclipse.virgo.kernel.osgi.framework.PackageAdminUtil" />
 
-	<!--  scoping -->
+	<!-- scoping -->
 	<reference id="scopeFactory"
 		interface="org.eclipse.virgo.kernel.shim.scope.ScopeFactory" />
 
@@ -229,7 +238,7 @@
 	<service ref="scopeServiceRepository"
 		interface="org.eclipse.virgo.kernel.install.artifact.ScopeServiceRepository" />
 
-	<!--  basic artifact identity determination -->
+	<!-- basic artifact identity determination -->
 	<service
 		interface="org.eclipse.virgo.kernel.install.artifact.ArtifactIdentityDeterminer">
 		<beans:bean
@@ -252,7 +261,7 @@
 		<beans:constructor-arg ref="refreshSubpipeline" />
 	</beans:bean>
 
-	<!--  basic artifact type factories -->
+	<!-- basic artifact type factories -->
 	<beans:bean id="bundleInstallArtifactTreeFactory"
 		class="org.eclipse.virgo.kernel.install.artifact.internal.bundle.BundleInstallArtifactTreeFactory">
 		<beans:constructor-arg ref="osgiFramework" />
@@ -265,8 +274,9 @@
 		<beans:constructor-arg ref="eventLogger" />
 		<beans:constructor-arg ref="artifactIdentityDeterminer" />
 	</beans:bean>
-	
-	<reference id="userBundleContext" interface="org.osgi.framework.BundleContext" filter="(org.eclipse.virgo.kernel.regionContext=true)"/>
+
+	<reference id="userBundleContext" interface="org.osgi.framework.BundleContext"
+		filter="(org.eclipse.virgo.kernel.regionContext=true)" />
 
 	<service ref="bundleInstallArtifactTreeFactory"
 		interface="org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory" />
@@ -302,5 +312,16 @@
 		<beans:bean
 			class="org.eclipse.virgo.kernel.install.artifact.internal.AtomicInstallArtifactLifecycleListener" />
 	</service>
+
+	<beans:bean id="factoryConfigInstallArtifactTreeFactory"
+		class="org.eclipse.virgo.kernel.install.artifact.internal.FactoryConfigInstallArtifactTreeFactory">
+		<beans:constructor-arg ref="bundleContext"/>
+		<beans:constructor-arg ref="repository" />
+		<beans:constructor-arg ref="eventLogger" />
+	</beans:bean>
+
+	<service ref="factoryConfigInstallArtifactTreeFactory"
+		interface="org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory" />
+
 
 </beans:beans>
