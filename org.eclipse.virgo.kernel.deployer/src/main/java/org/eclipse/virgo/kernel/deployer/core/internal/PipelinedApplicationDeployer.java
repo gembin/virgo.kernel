@@ -12,9 +12,19 @@
 package org.eclipse.virgo.kernel.deployer.core.internal;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.JMX;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 
 import org.osgi.framework.Version;
 
@@ -42,6 +52,7 @@ import org.eclipse.virgo.kernel.install.environment.InstallEnvironment;
 import org.eclipse.virgo.kernel.install.environment.InstallEnvironmentFactory;
 import org.eclipse.virgo.kernel.install.pipeline.Pipeline;
 import org.eclipse.virgo.medic.eventlog.EventLogger;
+import org.eclipse.virgo.repository.management.Repository;
 import org.eclipse.virgo.util.common.Tree;
 import org.eclipse.virgo.util.io.PathReference;
 
@@ -133,6 +144,7 @@ final class PipelinedApplicationDeployer implements ApplicationDeployer, Applica
     }
 
     private DeploymentIdentity doInstall(URI normalisedUri, DeploymentOptions deploymentOptions) throws DeploymentException {
+        updateWatchedRepositories();
         synchronized (this.monitor) {
             InstallArtifact existingArtifact = this.ram.get(normalisedUri);
 
@@ -549,13 +561,41 @@ final class PipelinedApplicationDeployer implements ApplicationDeployer, Applica
     }
 
     private void stopArtifact(InstallArtifact installArtifact) throws DeploymentException {
-
         installArtifact.stop();
-
     }
 
     private void uninstallArtifact(InstallArtifact installArtifact) throws DeploymentException {
         installArtifact.uninstall();
+    }
+    
+    private void updateWatchedRepositories(){
+        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        try {
+            Set<ObjectName> objectNames = mBeanServer.queryNames(new ObjectName("org.eclipse.virgo.kernel:type=Repository,*"), null);
+            for (ObjectName objectName : objectNames) {
+                Repository repo = JMX.newMXBeanProxy(mBeanServer, objectName, Repository.class);
+                if(repo != null && "Watched".equals(repo.type())){
+                    try {
+                        mBeanServer.invoke(objectName, "forceCheck", new Object[0], new String[0]);
+                    } catch (InstanceNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (ReflectionException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (MBeanException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (MalformedObjectNameException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } catch (NullPointerException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
     }
 
 }
