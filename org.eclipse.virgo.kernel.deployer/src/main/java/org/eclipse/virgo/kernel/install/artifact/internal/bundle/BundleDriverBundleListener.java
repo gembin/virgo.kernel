@@ -22,11 +22,12 @@ import org.slf4j.LoggerFactory;
 
 import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
 import org.eclipse.virgo.kernel.install.artifact.internal.ArtifactStateMonitor;
+import org.eclipse.virgo.kernel.install.artifact.internal.StandardArtifactStateMonitor;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.util.math.ConcurrentHashSet;
 
 /**
- * {@link BundleDriverBundleListener} listens for bundle events and notifies the bundle's {@link ArtifactStateMonitor}.
+ * {@link BundleDriverBundleListener} listens for bundle events and notifies the bundle's {@link StandardArtifactStateMonitor}.
  * <p />
  * 
  * <strong>Concurrent Semantics</strong><br />
@@ -72,6 +73,7 @@ final class BundleDriverBundleListener implements SynchronousBundleListener {
                         artifactStateMonitor.onResolved(this.installArtifact);
                         break;
                     case BundleEvent.LAZY_ACTIVATION:
+                        break;
                     case BundleEvent.STARTING:
                         artifactStateMonitor.onStarting(this.installArtifact);
                         break;

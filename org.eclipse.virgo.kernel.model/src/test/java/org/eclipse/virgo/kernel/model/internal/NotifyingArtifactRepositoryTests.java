@@ -20,8 +20,6 @@ import java.util.Set;
 
 import org.eclipse.virgo.kernel.model.Artifact;
 import org.eclipse.virgo.kernel.model.StubCompositeArtifact;
-import org.eclipse.virgo.kernel.model.internal.ArtifactRepositoryListener;
-import org.eclipse.virgo.kernel.model.internal.NotifyingRuntimeArtifactRepository;
 import org.junit.Test;
 
 

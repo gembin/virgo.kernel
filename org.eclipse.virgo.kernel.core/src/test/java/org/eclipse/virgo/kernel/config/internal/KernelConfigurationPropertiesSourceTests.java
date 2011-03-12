@@ -19,8 +19,6 @@ import java.util.Properties;
 
 import org.junit.Test;
 
-import org.eclipse.virgo.kernel.config.internal.KernelConfiguration;
-import org.eclipse.virgo.kernel.config.internal.KernelConfigurationPropertiesSource;
 import org.eclipse.virgo.teststubs.osgi.framework.StubBundleContext;
 
 
@@ -44,5 +42,6 @@ public class KernelConfigurationPropertiesSourceTests {
         assertEquals(configuration.getDomain(), properties.getProperty(KernelConfigurationPropertiesSource.PROPERTY_DOMAIN));
         assertEquals(configuration.getHomeDirectory().getAbsolutePath(), properties.getProperty(KernelConfigurationPropertiesSource.PROPERTY_HOME_DIRECTORY));
         assertEquals(configuration.getWorkDirectory().getAbsolutePath(), properties.getProperty(KernelConfigurationPropertiesSource.PROPERTY_WORK_DIRECTORY));
+        assertEquals(Integer.toString(configuration.getStartupWaitLimit()), properties.getProperty(KernelConfigurationPropertiesSource.PROPERTY_KERNEL_STARTUP_WAIT_LIMIT));
     }
 }

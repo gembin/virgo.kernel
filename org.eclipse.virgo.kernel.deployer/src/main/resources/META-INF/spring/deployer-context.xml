@@ -156,14 +156,7 @@
 
 	<beans:bean id="plumber"
 		class="org.eclipse.virgo.kernel.deployer.core.internal.Plumber">
-		<beans:constructor-arg>
-			<beans:bean factory-method="getPackageAdmin"
-				class="org.eclipse.virgo.kernel.deployer.core.internal.RegionAwarePackageAdminAccessor">
-				<beans:constructor-arg>
-					<reference interface="org.eclipse.virgo.kernel.osgi.region.Region" />
-				</beans:constructor-arg>
-			</beans:bean>
-		</beans:constructor-arg>
+		<beans:constructor-arg ref="packageAdmin" />
 		<beans:constructor-arg ref="bundleContext" />
 		<beans:constructor-arg ref="pipelineFactory" />
 		<beans:constructor-arg ref="quasiFrameworkFactory" />
@@ -203,10 +196,12 @@
 		<beans:constructor-arg ref="eventLogger" />
 	</beans:bean>
 
+	<reference id="kernelConfig" interface="org.eclipse.virgo.kernel.core.KernelConfig"/>
+	
 	<beans:bean id="deployerConfig"
 		class="org.eclipse.virgo.kernel.deployer.core.internal.StandardDeployerConfiguration">
-		<beans:constructor-arg value="${deployer.timeout}" />
-		<beans:constructor-arg value="${deployer.pickupDirectory}" />
+		<beans:constructor-arg value="#{kernelConfig.getProperty('deployer.timeout')}" />
+		<beans:constructor-arg value="#{kernelConfig.getProperty('deployer.pickupDirectory')}" />
 	</beans:bean>
 
 	<service ref="deployerConfig"
@@ -266,10 +261,12 @@
 		<beans:constructor-arg ref="bundleStarter" />
 		<beans:constructor-arg ref="tracingService" />
 		<beans:constructor-arg ref="packageAdminUtil" />
-		<beans:constructor-arg value="#{region.getBundleContext()}" />
+		<beans:constructor-arg ref="userBundleContext" />
 		<beans:constructor-arg ref="eventLogger" />
 		<beans:constructor-arg ref="artifactIdentityDeterminer" />
 	</beans:bean>
+	
+	<reference id="userBundleContext" interface="org.osgi.framework.BundleContext" filter="(org.eclipse.virgo.kernel.regionContext=true)"/>
 
 	<service ref="bundleInstallArtifactTreeFactory"
 		interface="org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory" />

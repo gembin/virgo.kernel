@@ -9,6 +9,7 @@
 		<pathelement location="../org.eclipse.virgo.kernel.services"/>
 		<pathelement location="../org.eclipse.virgo.kernel.osgi"/>
 		<pathelement location="../org.eclipse.virgo.kernel.deployer"/>
+        <pathelement location="../org.eclipse.virgo.kernel.userregionfactory"/>
 		<pathelement location="../org.eclipse.virgo.kernel.userregion"/>
 		<pathelement location="../org.eclipse.virgo.kernel.agent.dm"/>
 		<pathelement location="../org.eclipse.virgo.kernel.kerneldmfragment"/>
@@ -74,6 +75,22 @@
 
 		<copy todir="${package.output.dir}/lib" failonerror="false">
 			<fileset dir="${basedir}/lib"/>
+			<filterset>
+				<filter token="ASPECTJ.VERSION" value="${org.aspectj}"/>
+				<filter token="OSGI.SERVICES.VERSION" value="${org.eclipse.osgi.services}"/>
+				<filter token="EQUINOX.EVENT.VERSION" value="${org.eclipse.equinox.event}"/>
+				<filter token="EQUINOX.CONFIGADMIN.VERSION" value="${org.eclipse.equinox.cm}"/>
+				<filter token="EQUINOX.DS.VERSION" value="${org.eclipse.equinox.ds}"/>
+				<filter token="EQUINOX.UTIL.VERSION" value="${org.eclipse.equinox.util}"/>
+				<filter token="KERNEL.VERSION" value="${bundle.version}"/>
+				<filter token="MEDIC.VERSION" value="${org.eclipse.virgo.medic}"/>
+				<filter token="REPOSITORY.VERSION" value="${org.eclipse.virgo.repository}"/>
+				<filter token="SLF4J.VERSION" value="${org.slf4j}"/>
+				<filter token="SPRING.DM.VERSION" value="${org.springframework.osgi}"/>	
+				<filter token="SPRING.VERSION" value="${org.springframework}"/>
+				<filter token="UTIL.VERSION" value="${org.eclipse.virgo.util}"/>
+				<filter token="OSGI.EXTENSIONS.VERSION" value="${org.eclipse.virgo.osgi}"/>
+			</filterset>
 		</copy>
 
 		<copy todir="${package.output.dir}/config" failonerror="false">
@@ -83,9 +100,10 @@
 				<filter token="ASPECTJ.VERSION" value="${org.aspectj}"/>
 				<filter token="OSGI.FRAMEWORK.VERSION" value="${org.eclipse.osgi}"/>
 				<filter token="OSGI.SERVICES.VERSION" value="${org.eclipse.osgi.services}"/>
+				<filter token="EQUINOX.EVENT.VERSION" value="${org.eclipse.equinox.event}"/>
 				<filter token="EQUINOX.CONFIGADMIN.VERSION" value="${org.eclipse.equinox.cm}"/>
-				<filter token="EQUINOX.SIMPLECONFIGURATOR.VERSION" value="${org.eclipse.equinox.simpleconfigurator}"/>
-				<filter token="FELIX.EVENTADMIN.VERSION" value="${org.apache.felix.eventadmin}"/>
+				<filter token="EQUINOX.DS.VERSION" value="${org.eclipse.equinox.ds}"/>
+				<filter token="EQUINOX.UTIL.VERSION" value="${org.eclipse.equinox.util}"/>
 				<filter token="KERNEL.VERSION" value="${bundle.version}"/>
 				<filter token="MEDIC.VERSION" value="${org.eclipse.virgo.medic}"/>
 				<filter token="REPOSITORY.VERSION" value="${org.eclipse.virgo.repository}"/>
