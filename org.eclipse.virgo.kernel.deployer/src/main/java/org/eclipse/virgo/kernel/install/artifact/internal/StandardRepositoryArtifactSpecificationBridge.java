@@ -14,6 +14,7 @@
 package org.eclipse.virgo.kernel.install.artifact.internal;
 
 import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
+import org.eclipse.virgo.kernel.install.artifact.ArtifactSpecificationBridge;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.repository.Repository;
 import org.eclipse.virgo.repository.RepositoryAwareArtifactDescriptor;

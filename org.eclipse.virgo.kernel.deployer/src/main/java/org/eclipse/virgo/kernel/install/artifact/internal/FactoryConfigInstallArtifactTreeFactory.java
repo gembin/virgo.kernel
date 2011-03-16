@@ -82,7 +82,7 @@ class FactoryConfigInstallArtifactTreeFactory implements InstallArtifactTreeFact
                 + "' not found");
         }
         ArtifactStateMonitor artifactStateMonitor = new StandardArtifactStateMonitor(this.bundleContext);
-        FactoryConfigInstallArtifact result = new FactoryConfigInstallArtifact(artifactIdentity, artifactStorage, artifactStateMonitor, eventLogger,
+        FactoryConfigInstallArtifact result = new FactoryConfigInstallArtifact(artifactIdentity, artifactStateMonitor, eventLogger,
             factoryConfigurationArtifacts);
         return constructInstallTree(result);
     }

@@ -13,12 +13,14 @@
 
 package org.eclipse.virgo.kernel.install.artifact.internal;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.virgo.kernel.artifact.fs.ArtifactFS;
 import org.eclipse.virgo.kernel.core.AbortableSignal;
 import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
 import org.eclipse.virgo.kernel.deployer.core.internal.AbortableSignalJunction;
@@ -38,7 +40,47 @@ import org.eclipse.virgo.util.common.Tree;
  * TODO Document concurrent semantics of FactoryConfigInstallArtifact
  */
 public final class FactoryConfigInstallArtifact extends AbstractInstallArtifact {
+    
+    private static final class NoOpArtifactStorage implements ArtifactStorage {
 
+        /** 
+         * {@inheritDoc}
+         */
+        @Override
+        public void synchronize() {
+        }
+
+        /** 
+         * {@inheritDoc}
+         */
+        @Override
+        public void synchronize(URI sourceUri) {
+        }
+
+        /** 
+         * {@inheritDoc}
+         */
+        @Override
+        public void rollBack() {
+        }
+
+        /** 
+         * {@inheritDoc}
+         */
+        @Override
+        public void delete() {            
+        }
+
+        /** 
+         * {@inheritDoc}
+         */
+        @Override
+        public ArtifactFS getArtifactFS() {
+            return null;
+        }
+        
+    }
+    
     private final Object monitor = new Object();
 
     private Set<RepositoryAwareArtifactDescriptor> artifacts;
@@ -46,11 +88,10 @@ public final class FactoryConfigInstallArtifact extends AbstractInstallArtifact 
     /**
      * @throws DeploymentException
      */
-    FactoryConfigInstallArtifact(@NonNull ArtifactIdentity identity, @NonNull ArtifactStorage artifactStorage,
-        @NonNull ArtifactStateMonitor artifactStateMonitor, EventLogger eventLogger, @NonNull Set<RepositoryAwareArtifactDescriptor> artifacts)
-        throws DeploymentException {
+    FactoryConfigInstallArtifact(@NonNull ArtifactIdentity identity, @NonNull ArtifactStateMonitor artifactStateMonitor, EventLogger eventLogger,
+        @NonNull Set<RepositoryAwareArtifactDescriptor> artifacts) throws DeploymentException {
 
-        super(identity, artifactStorage, artifactStateMonitor, null, eventLogger);
+        super(identity, new NoOpArtifactStorage() , artifactStateMonitor, null, eventLogger);
 
         // make a copy of input list
         this.artifacts = new HashSet<RepositoryAwareArtifactDescriptor>(artifacts);

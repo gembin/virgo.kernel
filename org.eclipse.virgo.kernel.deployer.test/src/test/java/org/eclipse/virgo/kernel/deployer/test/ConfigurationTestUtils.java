@@ -120,4 +120,15 @@ final class ConfigurationTestUtils {
             Thread.sleep(100);
         }
     }
+    
+    static int countFactoryConfigurations(ConfigurationAdmin configAdmin, String factoryPid) throws Exception {
+        Configuration[] configurations = configAdmin.listConfigurations(null);
+        int counter = 0;
+        for (Configuration c : configurations) {
+            if (factoryPid.equals(c.getFactoryPid())) {
+                counter++;
+            }
+        }
+        return counter;
+    }
 }

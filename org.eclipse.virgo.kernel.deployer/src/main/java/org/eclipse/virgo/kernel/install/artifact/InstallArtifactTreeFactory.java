@@ -13,7 +13,6 @@ package org.eclipse.virgo.kernel.install.artifact;
 
 import java.util.Map;
 
-
 import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
 import org.eclipse.virgo.util.common.Tree;
 
@@ -27,6 +26,19 @@ import org.eclipse.virgo.util.common.Tree;
  * 
  */
 public interface InstallArtifactTreeFactory {
+//    
+//    /**
+//     * Constructs an install tree from the {@link ArtifactStorage}. If this factory cannot handle the given artifact type, it
+//     * returns <code>null</code>.
+//     * @param artifactIdentity
+//     * @param deploymentProperties the deployment properties for the artifact. Can be <code>null</code>.
+//     * @param repositoryName The name of the repository from which that artifact originates, or <code>null</code> if the artifact is not from a repository.
+//     * @return an install tree or <code>null</code> if the factory cannot handle the given artifact type
+//     * @throws DeploymentException if the tree cannot be constructed
+//     */
+//    Tree<InstallArtifact> constructInstallArtifactTree(ArtifactIdentity artifactIdentity, Map<String, String> deploymentProperties, RepositoryAwareArtifactDescriptor artifactDescriptor) throws DeploymentException;
+//
+//    
 
     /**
      * Constructs an install tree from the {@link ArtifactStorage}. If this factory cannot handle the given artifact type, it

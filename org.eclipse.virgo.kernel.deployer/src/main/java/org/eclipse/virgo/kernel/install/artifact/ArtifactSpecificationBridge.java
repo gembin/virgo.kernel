@@ -11,7 +11,7 @@
  *    dsklyut - initial contribution
  */
 
-package org.eclipse.virgo.kernel.install.artifact.internal;
+package org.eclipse.virgo.kernel.install.artifact;
 
 import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
 import org.eclipse.virgo.repository.RepositoryAwareArtifactDescriptor;

@@ -74,7 +74,7 @@
 		interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
 		ref="planResolver" ranking="1000" />
 	<service interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
-        ref="planResolver" ranking="1050" />
+        ref="factoryConfigurationResolver" ranking="1050" />
 	<service
 		interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
 		ref="bundleManifestVersionUpgrader" ranking="2000" />

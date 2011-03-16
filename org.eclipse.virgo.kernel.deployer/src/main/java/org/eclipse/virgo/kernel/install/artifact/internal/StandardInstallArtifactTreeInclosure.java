@@ -23,6 +23,7 @@ import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
 import org.eclipse.virgo.kernel.deployer.core.DeploymentOptions;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentity;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentityDeterminer;
+import org.eclipse.virgo.kernel.install.artifact.ArtifactSpecificationBridge;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifact;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory;
@@ -114,7 +115,14 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
         ArtifactIdentity identity = new ArtifactIdentity(type, name, artifactDescriptor.getVersion(), scopeName);
         identity = ArtifactIdentityScoper.scopeArtifactIdentity(identity);
 
-        ArtifactStorage artifactStorage = this.artifactStorageFactory.create(new File(artifactURI), identity);
+        // TODO: Need a better way to skip creating of ArtifactStorage or have ArtifactStorage deal with a URI
+        // XXX: Not sure how to deal with situations where ArtifactDescriptor is a "virtual", i.e. does not have a
+        // source file/uri (example: factory-configuration that is just a key to look up actual configurations in
+        // repositories)
+        ArtifactStorage artifactStorage = null;
+        if (artifactURI != null) {
+            artifactStorage = this.artifactStorageFactory.create(new File(artifactURI), identity);
+        }
 
         Tree<InstallArtifact> installArtifactTree = constructInstallArtifactTree(identity, specification.getProperties(), artifactStorage,
             artifactDescriptor.getRepositoryName());

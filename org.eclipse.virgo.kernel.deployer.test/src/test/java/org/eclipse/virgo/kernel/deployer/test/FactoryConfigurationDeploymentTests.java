@@ -13,6 +13,9 @@
 
 package org.eclipse.virgo.kernel.deployer.test;
 
+import static org.eclipse.virgo.kernel.deployer.test.ConfigurationTestUtils.countFactoryConfigurations;
+import static org.eclipse.virgo.kernel.deployer.test.ConfigurationTestUtils.pollUntilFactoryInConfigurationAdmin;
+import static org.eclipse.virgo.kernel.deployer.test.ConfigurationTestUtils.pollUntilFactoryNotInConfigurationAdmin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -31,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedServiceFactory;
@@ -116,7 +118,7 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
         this.context.registerService(ManagedServiceFactory.class, service, properties);
 
         // make sure that we are starting off with a clean slate
-        assertEquals(0, countFactoryConfigurations("test.factory.pid.a"));
+        assertEquals(0, countFactoryConfigurations(this.configAdmin, "test.factory.pid.a"));
 
         File configurationFile = new File("src/test/resources/configuration.deployment/factory-config-a.properties");
 
@@ -126,7 +128,7 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
         // let it deploy
         Thread.sleep(1000);
 
-        assertEquals(1, countFactoryConfigurations("test.factory.pid.a"));
+        assertEquals(1, countFactoryConfigurations(this.configAdmin, "test.factory.pid.a"));
         assertEquals(1, service.updateCount());
         assertEquals(0, service.deleteCount());
         Dictionary propertiesFromService = service.getProperties();
@@ -139,14 +141,14 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
         // give time for events to percolate
         Thread.sleep(1000);
 
-        assertEquals(0, countFactoryConfigurations("test.factory.pid.a"));
+        assertEquals(0, countFactoryConfigurations(this.configAdmin, "test.factory.pid.a"));
         assertEquals(1, service.updateCount());
         assertEquals(1, service.deleteCount());
 
         // now lets make sure that we can deploy it again
         deploymentIdentity = this.appDeployer.deploy(configurationFile.toURI());
         Thread.sleep(1000);
-        assertEquals(1, countFactoryConfigurations("test.factory.pid.a"));
+        assertEquals(1, countFactoryConfigurations(this.configAdmin, "test.factory.pid.a"));
         assertEquals(2, service.updateCount());
         assertEquals(1, service.deleteCount());
 
@@ -176,13 +178,13 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
             this.context.registerService(ManagedServiceFactory.class, service, properties);
 
             // make sure that we are starting off with a clean slate
-            assertEquals(0, countFactoryConfigurations(factoryPid));
+            assertEquals(0, countFactoryConfigurations(this.configAdmin, factoryPid));
 
             // copy file to hot deploy location
             hotDeployConfiguration.store(new FileOutputStream(target), "no comment");
 
-            ConfigurationTestUtils.pollUntilFactoryInConfigurationAdmin(this.configAdmin, factoryPid);
-            assertEquals(1, countFactoryConfigurations(factoryPid));
+            pollUntilFactoryInConfigurationAdmin(this.configAdmin, factoryPid);
+            assertEquals(1, countFactoryConfigurations(this.configAdmin, factoryPid));
             assertEquals(1, service.updateCount());
             assertEquals(0, service.deleteCount());
 
@@ -193,9 +195,9 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
 
             // remove the file and let it be removed
             target.delete();
-            ConfigurationTestUtils.pollUntilFactoryNotInConfigurationAdmin(this.configAdmin, factoryPid);
+            pollUntilFactoryNotInConfigurationAdmin(this.configAdmin, factoryPid);
 
-            assertEquals(0, countFactoryConfigurations(factoryPid));
+            assertEquals(0, countFactoryConfigurations(this.configAdmin, factoryPid));
             assertEquals(1, service.updateCount());
             assertEquals(1, service.deleteCount());
         } finally {
@@ -230,15 +232,15 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
             this.context.registerService(ManagedServiceFactory.class, service, properties);
 
             // make sure that we are starting off with a clean slate
-            assertEquals(0, countFactoryConfigurations(factoryPid));
+            assertEquals(0, countFactoryConfigurations(this.configAdmin, factoryPid));
 
             // copy file to hot deploy location
             hotDeployConfiguration.store(new FileOutputStream(target), "initial");
 
-            ConfigurationTestUtils.pollUntilFactoryInConfigurationAdmin(this.configAdmin, factoryPid);
+            pollUntilFactoryInConfigurationAdmin(this.configAdmin, factoryPid);
             // let events propagate
             Thread.sleep(100);
-            assertEquals(1, countFactoryConfigurations(factoryPid));
+            assertEquals(1, countFactoryConfigurations(this.configAdmin, factoryPid));
             assertEquals(1, service.updateCount());
             assertEquals(0, service.deleteCount());
 
@@ -254,7 +256,7 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
 
             // let events propagate and update happen
             Thread.sleep(3000);
-            assertEquals(1, countFactoryConfigurations(factoryPid));
+            assertEquals(1, countFactoryConfigurations(this.configAdmin, factoryPid));
             assertEquals(2, service.updateCount());
             assertEquals(0, service.deleteCount());
 
@@ -265,9 +267,9 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
 
             // remove the file and let it be removed
             target.delete();
-            ConfigurationTestUtils.pollUntilFactoryNotInConfigurationAdmin(this.configAdmin, factoryPid);
+            pollUntilFactoryNotInConfigurationAdmin(this.configAdmin, factoryPid);
 
-            assertEquals(0, countFactoryConfigurations(factoryPid));
+            assertEquals(0, countFactoryConfigurations(this.configAdmin, factoryPid));
             assertEquals(2, service.updateCount());
             assertEquals(1, service.deleteCount());
         } finally {
@@ -311,15 +313,15 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
             this.context.registerService(ManagedServiceFactory.class, service, properties);
 
             // make sure that we are starting off with a clean slate
-            assertEquals(0, countFactoryConfigurations(factoryPid));
+            assertEquals(0, countFactoryConfigurations(this.configAdmin, factoryPid));
 
             // copy file to hot deploy location
             configOne.store(new FileOutputStream(targetOne), "initial");
 
-            ConfigurationTestUtils.pollUntilFactoryInConfigurationAdmin(this.configAdmin, factoryPid);
+            pollUntilFactoryInConfigurationAdmin(this.configAdmin, factoryPid);
             // let events propagate
             Thread.sleep(100);
-            assertEquals(1, countFactoryConfigurations(factoryPid));
+            assertEquals(1, countFactoryConfigurations(this.configAdmin, factoryPid));
             assertEquals(1, service.updateCount());
             assertEquals(0, service.deleteCount());
 
@@ -331,7 +333,7 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
 
             configTwo.store(new FileOutputStream(targetTwo), "initial");
             Thread.sleep(3000);
-            assertEquals(2, countFactoryConfigurations(factoryPid));
+            assertEquals(2, countFactoryConfigurations(this.configAdmin, factoryPid));
             assertEquals(2, service.updateCount());
             assertEquals(0, service.deleteCount());
 
@@ -344,8 +346,8 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
             assertTrue(targetTwo.delete());
 
             // let events propagate and update happen
-            ConfigurationTestUtils.pollUntilFactoryNotInConfigurationAdmin(this.configAdmin, factoryPid);
-            assertEquals(0, countFactoryConfigurations(factoryPid));
+            pollUntilFactoryNotInConfigurationAdmin(this.configAdmin, factoryPid);
+            assertEquals(0, countFactoryConfigurations(this.configAdmin, factoryPid));
             assertEquals(2, service.updateCount());
             assertEquals(2, service.deleteCount());
 
@@ -357,16 +359,5 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
                 targetTwo.delete();
             }
         }
-    }
-
-    private int countFactoryConfigurations(String factoryPid) throws Exception {
-        Configuration[] configurations = this.configAdmin.listConfigurations(null);
-        int counter = 0;
-        for (Configuration c : configurations) {
-            if (factoryPid.equals(c.getFactoryPid())) {
-                counter++;
-            }
-        }
-        return counter;
     }
 }

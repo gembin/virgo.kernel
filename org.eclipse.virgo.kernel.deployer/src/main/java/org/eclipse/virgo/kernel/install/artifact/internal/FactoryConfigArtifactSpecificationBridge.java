@@ -13,10 +13,12 @@
 
 package org.eclipse.virgo.kernel.install.artifact.internal;
 
+import java.net.URI;
 import java.util.Set;
 
 import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentityDeterminer;
+import org.eclipse.virgo.kernel.install.artifact.ArtifactSpecificationBridge;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.repository.ArtifactDescriptor;
 import org.eclipse.virgo.repository.Attribute;
@@ -75,11 +77,7 @@ final class FactoryConfigArtifactSpecificationBridge implements ArtifactSpecific
         }
 
         public java.net.URI getUri() {
-            if (this.delegate.getUri() == null) {
-                PathReference pr = PathReference.concat(this.delegate.getType(), this.delegate.getName(), this.delegate.getVersion().toString());
-                return pr.toFile().toURI();
-            }
-            return this.delegate.getUri();
+            return null;
         }
 
         public Version getVersion() {
@@ -109,6 +107,7 @@ final class FactoryConfigArtifactSpecificationBridge implements ArtifactSpecific
             return this.delegate.toString();
         }
     }
+
     /**
      * {@inheritDoc}
      */
@@ -122,8 +121,19 @@ final class FactoryConfigArtifactSpecificationBridge implements ArtifactSpecific
         .setName(artifactSpecification.getName())//
         .setType(ArtifactIdentityDeterminer.FACTORY_CONFIGURATION_TYPE)//
         .setVersion(artifactSpecification.getVersionRange().toParseString())//
+        .setUri(buildUri(artifactSpecification))//
         .addAttribute(new AttributeBuilder().setName(ConfigurationAdmin.SERVICE_FACTORYPID).setValue(artifactSpecification.getName()).build());
 
         return new DelegatingRepositoryAwareArtifactDescriptor(builder.build(), null);
+    }
+
+    /**
+     * @param artifactSpecification
+     * @return
+     */
+    private URI buildUri(ArtifactSpecification artifactSpecification) {
+        PathReference pr = PathReference.concat(artifactSpecification.getType(), artifactSpecification.getName(),
+            artifactSpecification.getVersionRange().toParseString());
+        return pr.toFile().toURI();
     }
 }
