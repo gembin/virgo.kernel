@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.osgi.framework.BundleContext;
 
-
 import org.eclipse.virgo.kernel.artifact.plan.PlanDescriptor;
 import org.eclipse.virgo.kernel.artifact.plan.PlanReader;
 import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
@@ -75,7 +74,7 @@ final class PlanInstallArtifactTreeFactory implements InstallArtifactTreeFactory
         this.refreshHandler = refreshHandler;
 
         this.parFactory = new ParPlanInstallArtifactFactory(eventLogger, bundleContext, bundleInstallArtifactTreeFactory, scopeServiceRepository,
-            scopeFactory, refreshHandler, configInstallArtifactTreeFactory, artifactStorageFactory, artifactIdentityDeterminer);
+            scopeFactory, refreshHandler, configInstallArtifactTreeFactory, artifactStorageFactory, artifactIdentityDeterminer, this);
     }
 
     /**
@@ -103,7 +102,7 @@ final class PlanInstallArtifactTreeFactory implements InstallArtifactTreeFactory
     }
 
     /**
-     * @throws DeploymentException  
+     * @throws DeploymentException
      */
     private PlanDescriptor getPlanDescriptor(ArtifactStorage artifactStorage) throws DeploymentException {
         InputStream in = null;
@@ -122,8 +121,8 @@ final class PlanInstallArtifactTreeFactory implements InstallArtifactTreeFactory
         StandardPlanInstallArtifact planInstallArtifact;
 
         planInstallArtifact = new StandardPlanInstallArtifact(artifactIdentity, planDescriptor.getAtomic(), planDescriptor.getScoped(),
-            artifactStorage, new StandardArtifactStateMonitor(this.bundleContext), this.scopeServiceRepository, this.scopeFactory,
-            this.eventLogger, this.refreshHandler, repositoryName, planDescriptor.getArtifactSpecifications());
+            artifactStorage, new StandardArtifactStateMonitor(this.bundleContext), this.scopeServiceRepository, this.scopeFactory, this.eventLogger,
+            this.refreshHandler, repositoryName, planDescriptor.getArtifactSpecifications());
 
         Tree<InstallArtifact> tree = constructInstallTree(planInstallArtifact);
         planInstallArtifact.setTree(tree);

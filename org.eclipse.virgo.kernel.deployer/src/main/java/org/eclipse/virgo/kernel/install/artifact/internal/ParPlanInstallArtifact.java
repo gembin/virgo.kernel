@@ -63,12 +63,15 @@ final class ParPlanInstallArtifact extends StandardPlanInstallArtifact {
 
     private final List<Tree<InstallArtifact>> childInstallArtifacts;
 
+    private final InstallArtifactTreeFactory planInstallArtifactTreeFactory;
+
     public ParPlanInstallArtifact(@NonNull ArtifactIdentity identity, @NonNull ArtifactStorage artifactStorage,
         @NonNull ArtifactStateMonitor artifactStateMonitor, @NonNull ScopeServiceRepository scopeServiceRepository,
         @NonNull ScopeFactory scopeFactory, @NonNull EventLogger eventLogger, @NonNull InstallArtifactTreeFactory bundleInstallArtifactTreeFactory,
         @NonNull InstallArtifactRefreshHandler refreshHandler, String repositoryName,
         @NonNull InstallArtifactTreeFactory configInstallArtifactTreeFactory, @NonNull ArtifactStorageFactory artifactStorageFactory,
-        @NonNull ArtifactIdentityDeterminer artifactIdentityDeterminer) throws DeploymentException {
+        @NonNull ArtifactIdentityDeterminer artifactIdentityDeterminer, @NonNull InstallArtifactTreeFactory planInstallArtifactTreeFactory)
+        throws DeploymentException {
         super(identity, true, true, artifactStorage, artifactStateMonitor, scopeServiceRepository, scopeFactory, eventLogger, refreshHandler,
             repositoryName, EMPTY_ARTIFACT_SPECIFICATION_LIST);
 
@@ -76,6 +79,7 @@ final class ParPlanInstallArtifact extends StandardPlanInstallArtifact {
         this.configInstallArtifactTreeFactory = configInstallArtifactTreeFactory;
 
         this.bundleInstallArtifactTreeFactory = bundleInstallArtifactTreeFactory;
+        this.planInstallArtifactTreeFactory = planInstallArtifactTreeFactory;
         this.artifactIdentityDeterminer = artifactIdentityDeterminer;
 
         List<OrderedPair<ArtifactIdentity, ArtifactFSEntry>> childArtifacts = findChildArtifacts(artifactStorage.getArtifactFS());
@@ -127,6 +131,9 @@ final class ParPlanInstallArtifact extends StandardPlanInstallArtifact {
                     null, null);
             } else if (ArtifactIdentityDeterminer.CONFIGURATION_TYPE.equals(identity.getType())) {
                 subTree = this.configInstallArtifactTreeFactory.constructInstallArtifactTree(identity, createArtifactStorage(artifactFs, identity),
+                    null, null);
+            } else if (ArtifactIdentityDeterminer.PLAN_TYPE.equals(identity.getType())) {
+                subTree = this.planInstallArtifactTreeFactory.constructInstallArtifactTree(identity, createArtifactStorage(artifactFs, identity),
                     null, null);
             }
 
