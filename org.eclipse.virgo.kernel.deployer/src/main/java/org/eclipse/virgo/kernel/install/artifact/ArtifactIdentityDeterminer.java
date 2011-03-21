@@ -25,15 +25,15 @@ import java.io.File;
  */
 public interface ArtifactIdentityDeterminer {
 
-    public static final String BUNDLE_TYPE = "bundle";
+    String BUNDLE_TYPE = "bundle";
 
-    public static final String PLAN_TYPE = "plan";
+    String PLAN_TYPE = "plan";
 
-    public static final String CONFIGURATION_TYPE = "configuration";
+    String CONFIGURATION_TYPE = "configuration";
     
-    public static final String FACTORY_CONFIGURATION_TYPE = "factory-configuration";
+    String FACTORY_CONFIGURATION_TYPE = "factory-configuration";
 
-    public static final String PAR_TYPE = "par";
+    String PAR_TYPE = "par";
 
     /**
      * Determines the identity of the given artifact.

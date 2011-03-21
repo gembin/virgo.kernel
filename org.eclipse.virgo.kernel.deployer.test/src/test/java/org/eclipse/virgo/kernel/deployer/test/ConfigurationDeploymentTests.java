@@ -19,6 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Dictionary;
 
+import org.eclipse.virgo.kernel.deployer.core.ApplicationDeployer;
+import org.eclipse.virgo.kernel.deployer.core.DeploymentIdentity;
+import org.eclipse.virgo.util.io.FileCopyUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,10 +34,6 @@ import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ConfigurationEvent;
 import org.osgi.service.cm.ConfigurationListener;
-
-import org.eclipse.virgo.kernel.deployer.core.ApplicationDeployer;
-import org.eclipse.virgo.kernel.deployer.core.DeploymentIdentity;
-import org.eclipse.virgo.util.io.FileCopyUtils;
 
 /**
  * Test deploying a configuration properties file.
@@ -180,7 +179,7 @@ public class ConfigurationDeploymentTests extends AbstractDeployerIntegrationTes
         Assert.assertTrue(isInDeploymentIdentities(deploymentIdentity));
         Configuration configuration = this.configAdmin.getConfiguration("empty", null);
         Dictionary<Object, Object> dictionary = configuration.getProperties();
-        Assert.assertEquals(1, dictionary.size());
+        Assert.assertEquals(2, dictionary.size());
         Assert.assertEquals("empty", dictionary.get("service.pid"));
 
         this.appDeployer.undeploy(deploymentIdentity);

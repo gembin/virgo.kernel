@@ -9,7 +9,7 @@
  *   VMware Inc. - initial contribution
  *******************************************************************************/
 
-package org.eclipse.virgo.kernel.install.artifact.internal;
+package org.eclipse.virgo.kernel.install.artifact.internal.config;
 
 import java.util.Map;
 
@@ -23,6 +23,8 @@ import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentityDeterminer;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifact;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory;
+import org.eclipse.virgo.kernel.install.artifact.internal.ArtifactStateMonitor;
+import org.eclipse.virgo.kernel.install.artifact.internal.StandardArtifactStateMonitor;
 import org.eclipse.virgo.medic.eventlog.EventLogger;
 import org.eclipse.virgo.util.common.ThreadSafeArrayListTree;
 import org.eclipse.virgo.util.common.Tree;
@@ -37,7 +39,7 @@ import org.eclipse.virgo.util.common.Tree;
  * This class is thread safe.
  * 
  */
-final class ConfigInstallArtifactTreeFactory implements InstallArtifactTreeFactory {
+public final class ConfigInstallArtifactTreeFactory implements InstallArtifactTreeFactory {
 
     private static final String PROPERTIES_TYPE = ArtifactIdentityDeterminer.CONFIGURATION_TYPE;
 

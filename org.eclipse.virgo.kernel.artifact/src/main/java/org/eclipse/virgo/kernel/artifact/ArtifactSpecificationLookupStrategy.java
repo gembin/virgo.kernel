@@ -11,26 +11,23 @@
  *    dsklyut - initial contribution
  */
 
-package org.eclipse.virgo.kernel.install.artifact;
+package org.eclipse.virgo.kernel.artifact;
 
-import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
 import org.eclipse.virgo.repository.RepositoryAwareArtifactDescriptor;
 
 
 /**
 * <p>
- * Implementations of this interface should have knowledge of how to generate {@link RepositoryAwareArtifactDescriptor} 
+ * Implementations of this interface should have knowledge of how to lookup {@link RepositoryAwareArtifactDescriptor} 
  * based on the {@link ArtifactSpecification}.
  * </p>
  * 
  * <strong>Concurrent Semantics</strong><br />
  * 
  * Implementations must be thread-safe.
- * 
- * TODO: Validate usefulness of this interface.  Currently it is used to abstract look up ArtifactDescriptors in StandardInstallArtifactTreeInclosure
- * 
+ *  
  */
-public interface ArtifactSpecificationBridge {
+public interface ArtifactSpecificationLookupStrategy {
 
-    RepositoryAwareArtifactDescriptor generateArtifactDescriptor(ArtifactSpecification artifactSpecification);
+    RepositoryAwareArtifactDescriptor lookup(ArtifactSpecification artifactSpecification);
 }

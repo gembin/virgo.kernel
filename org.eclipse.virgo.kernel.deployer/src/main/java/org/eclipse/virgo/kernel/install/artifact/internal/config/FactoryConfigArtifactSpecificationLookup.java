@@ -11,35 +11,36 @@
  *    dsklyut - initial contribution
  */
 
-package org.eclipse.virgo.kernel.install.artifact.internal;
+package org.eclipse.virgo.kernel.install.artifact.internal.config;
 
+import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Set;
 
 import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
+import org.eclipse.virgo.kernel.artifact.ArtifactSpecificationLookupStrategy;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentityDeterminer;
-import org.eclipse.virgo.kernel.install.artifact.ArtifactSpecificationBridge;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.repository.ArtifactDescriptor;
 import org.eclipse.virgo.repository.Attribute;
 import org.eclipse.virgo.repository.RepositoryAwareArtifactDescriptor;
 import org.eclipse.virgo.repository.builder.ArtifactDescriptorBuilder;
 import org.eclipse.virgo.repository.builder.AttributeBuilder;
-import org.eclipse.virgo.util.io.PathReference;
 import org.osgi.framework.Version;
 import org.osgi.service.cm.ConfigurationAdmin;
 
 /**
- * Implementation of {@link ArtifactSpecificationBridge} that deals with Artifacts of type
+ * Implementation of {@link ArtifactSpecificationLookupStrategy} that deals with Artifacts of type
  * {@link ArtifactIdentityDeterminer#FACTORY_CONFIGURATION_TYPE}
  * <p />
- * As factory configuration is a pseudo artifact that cannot be looked up individually in Repository, but acts as a
+ * A factory configuration is a "virtual" artifact that cannot be looked up individually in Repository, but acts as a
  * container for individual instances of configurations and manages their lifecycle.
  * 
  * <strong>Concurrent Semantics</strong><br />
  * Thread Safe
  */
-final class FactoryConfigArtifactSpecificationBridge implements ArtifactSpecificationBridge {
+public final class FactoryConfigArtifactSpecificationLookup implements ArtifactSpecificationLookupStrategy {
 
     private static final class DelegatingRepositoryAwareArtifactDescriptor implements RepositoryAwareArtifactDescriptor {
 
@@ -76,8 +77,11 @@ final class FactoryConfigArtifactSpecificationBridge implements ArtifactSpecific
             return this.delegate.getType();
         }
 
+        /**
+         * Always returns null. {@inheritDoc}
+         */
         public java.net.URI getUri() {
-            return null;
+            return delegate.getUri();
         }
 
         public Version getVersion() {
@@ -112,7 +116,7 @@ final class FactoryConfigArtifactSpecificationBridge implements ArtifactSpecific
      * {@inheritDoc}
      */
     @Override
-    public RepositoryAwareArtifactDescriptor generateArtifactDescriptor(@NonNull ArtifactSpecification artifactSpecification) {
+    public RepositoryAwareArtifactDescriptor lookup(@NonNull ArtifactSpecification artifactSpecification) {
         if (!ArtifactIdentityDeterminer.FACTORY_CONFIGURATION_TYPE.equals(artifactSpecification.getType())) {
             return null;
         }
@@ -132,8 +136,13 @@ final class FactoryConfigArtifactSpecificationBridge implements ArtifactSpecific
      * @return
      */
     private URI buildUri(ArtifactSpecification artifactSpecification) {
-        PathReference pr = PathReference.concat(artifactSpecification.getType(), artifactSpecification.getName(),
-            artifactSpecification.getVersionRange().toParseString());
-        return pr.toFile().toURI();
+
+        try {
+            return new URI(artifactSpecification.getType(), new StringBuilder(artifactSpecification.getName()).append(File.pathSeparatorChar).append(
+                artifactSpecification.getVersionRange().toParseString()).toString(), null);
+        } catch (URISyntaxException e) {
+            // TODO: do we need an exception on
+            throw new RuntimeException("Could not construct uri for " + artifactSpecification.toString(), e);
+        }
     }
 }

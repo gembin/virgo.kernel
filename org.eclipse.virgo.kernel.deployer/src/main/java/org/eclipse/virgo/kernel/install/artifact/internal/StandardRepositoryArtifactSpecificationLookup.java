@@ -14,23 +14,23 @@
 package org.eclipse.virgo.kernel.install.artifact.internal;
 
 import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
-import org.eclipse.virgo.kernel.install.artifact.ArtifactSpecificationBridge;
+import org.eclipse.virgo.kernel.artifact.ArtifactSpecificationLookupStrategy;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.repository.Repository;
 import org.eclipse.virgo.repository.RepositoryAwareArtifactDescriptor;
 
 /**
- * Implementation of {@link ArtifactSpecificationBridge} that is backed by {@link Repository}
+ * Implementation of {@link ArtifactSpecificationLookupStrategy} that is backed by {@link Repository}
  * <p />
  * 
  * <strong>Concurrent Semantics</strong><br />
  * Thread Safe
  */
-final class StandardRepositoryArtifactSpecificationBridge implements ArtifactSpecificationBridge {
+final class StandardRepositoryArtifactSpecificationLookup implements ArtifactSpecificationLookupStrategy {
 
     private final Repository repository;
 
-    StandardRepositoryArtifactSpecificationBridge(@NonNull Repository repository) {
+    StandardRepositoryArtifactSpecificationLookup(@NonNull Repository repository) {
         this.repository = repository;
     }
 
@@ -38,7 +38,7 @@ final class StandardRepositoryArtifactSpecificationBridge implements ArtifactSpe
      * {@inheritDoc}
      */
     @Override
-    public RepositoryAwareArtifactDescriptor generateArtifactDescriptor(ArtifactSpecification artifactSpecification) {
+    public RepositoryAwareArtifactDescriptor lookup(ArtifactSpecification artifactSpecification) {
         return this.repository.get(artifactSpecification.getType(), artifactSpecification.getName(), artifactSpecification.getVersionRange());
     }
 

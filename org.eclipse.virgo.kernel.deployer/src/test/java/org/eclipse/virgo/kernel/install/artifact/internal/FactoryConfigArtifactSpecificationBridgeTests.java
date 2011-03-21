@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNull;
 
 import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentityDeterminer;
+import org.eclipse.virgo.kernel.install.artifact.internal.config.FactoryConfigArtifactSpecificationLookup;
 import org.eclipse.virgo.repository.RepositoryAwareArtifactDescriptor;
 import org.eclipse.virgo.util.osgi.VersionRange;
 import org.junit.Before;
@@ -30,11 +31,11 @@ import org.junit.Test;
  */
 public class FactoryConfigArtifactSpecificationBridgeTests {
 
-    private FactoryConfigArtifactSpecificationBridge bridge;
+    private FactoryConfigArtifactSpecificationLookup bridge;
 
     @Before
     public void onSetUp() {
-        bridge = new FactoryConfigArtifactSpecificationBridge();
+        bridge = new FactoryConfigArtifactSpecificationLookup();
     }
 
     @Test
@@ -43,7 +44,7 @@ public class FactoryConfigArtifactSpecificationBridgeTests {
         final String artifactType = ArtifactIdentityDeterminer.CONFIGURATION_TYPE;
         ArtifactSpecification spec = new ArtifactSpecification(artifactType, "spec-1", VersionRange.naturalNumberRange());
 
-        assertNull(bridge.generateArtifactDescriptor(spec));
+        assertNull(bridge.lookup(spec));
     }
 
     @Test
@@ -51,12 +52,12 @@ public class FactoryConfigArtifactSpecificationBridgeTests {
         final String artifactType = ArtifactIdentityDeterminer.FACTORY_CONFIGURATION_TYPE;
         ArtifactSpecification spec = new ArtifactSpecification(artifactType, "spec-1", VersionRange.naturalNumberRange());
 
-        RepositoryAwareArtifactDescriptor descriptor = bridge.generateArtifactDescriptor(spec);
+        RepositoryAwareArtifactDescriptor descriptor = bridge.lookup(spec);
 
         assertNotNull(descriptor);
         assertEquals(artifactType, descriptor.getType());
         assertEquals("spec-1", descriptor.getName());
         assertEquals(VersionRange.naturalNumberRange().toParseString(), descriptor.getVersion().toString());
-        assertNull(descriptor.getUri());
+        assertNotNull(descriptor.getUri());
     }
 }

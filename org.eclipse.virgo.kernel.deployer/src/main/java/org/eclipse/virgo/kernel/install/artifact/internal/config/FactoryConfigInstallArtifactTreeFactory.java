@@ -11,7 +11,7 @@
  *    dsklyut - initial contribution
  */
 
-package org.eclipse.virgo.kernel.install.artifact.internal;
+package org.eclipse.virgo.kernel.install.artifact.internal.config;
 
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +23,8 @@ import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentityDeterminer;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifact;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory;
+import org.eclipse.virgo.kernel.install.artifact.internal.ArtifactStateMonitor;
+import org.eclipse.virgo.kernel.install.artifact.internal.StandardArtifactStateMonitor;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.medic.eventlog.EventLogger;
 import org.eclipse.virgo.repository.ArtifactDescriptor;
@@ -72,6 +74,9 @@ class FactoryConfigInstallArtifactTreeFactory implements InstallArtifactTreeFact
         }
         final VersionRange versionRange = new VersionRange(artifactIdentity.getVersion().toString());
 
+        // TODO: do we allow installation if there are no factory configurations in repository?
+        // TODO: we can provide a property to control this behavior (i.e. factory-configuration.deployment.strict = true/false) with true as default.
+        // TODO: this could be useful as configurations can be deployed already through pickup, kernel/config directory or programmatically. 
         Set<RepositoryAwareArtifactDescriptor> factoryConfigurationArtifacts = lookupFactoryConfigurations(artifactIdentity, versionRange);
         if (factoryConfigurationArtifacts.isEmpty()) {
             // TODO: do we need a more descriptive message here???

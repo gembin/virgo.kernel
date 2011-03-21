@@ -29,6 +29,8 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
 
 import org.eclipse.virgo.kernel.osgi.framework.OsgiFramework;
@@ -39,11 +41,11 @@ import org.eclipse.virgo.kernel.artifact.fs.StandardArtifactFSFactory;
 import org.eclipse.virgo.kernel.core.BundleStarter;
 import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
 import org.eclipse.virgo.kernel.deployer.core.DeploymentOptions;
+import org.eclipse.virgo.kernel.install.artifact.ArtifactStorageFactory;
 import org.eclipse.virgo.kernel.install.artifact.BundleInstallArtifact;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifact;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeInclosure;
-import org.eclipse.virgo.kernel.install.artifact.internal.ArtifactStorageFactory;
 import org.eclipse.virgo.kernel.install.artifact.internal.StandardArtifactIdentityDeterminer;
 import org.eclipse.virgo.kernel.install.artifact.internal.StandardArtifactStorageFactory;
 import org.eclipse.virgo.kernel.install.artifact.internal.StandardInstallArtifactRefreshHandler;
@@ -123,8 +125,15 @@ public class StandardInstallArtifactTreeInclosureTests {
         expect(this.osgiFramework.getBundleContext()).andReturn(bundleContext).anyTimes();
         expect(this.repository.get(isA(String.class), isA(String.class), isA(VersionRange.class))).andReturn(this.artifactDescriptor);
         expect(this.artifactDescriptor.getUri()).andReturn(this.bundleURI);
-        expect(this.artifactDescriptor.getVersion()).andReturn(new Version(1,2,3));
+        expect(this.artifactDescriptor.getVersion()).andReturn(new Version(1, 2, 3));
         expect(this.artifactDescriptor.getRepositoryName()).andReturn(TEST_BUNDLE_REPOSITORY_NAME);
+
+        // add filters for service trackers
+        try {
+            bundleContext.addFilter(FrameworkUtil.createFilter("(objectClass=org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory)"));
+        } catch (InvalidSyntaxException e) {
+            throw new DeploymentException(e.getMessage(), e);
+        }
 
         replayMocks();
 
@@ -133,10 +142,15 @@ public class StandardInstallArtifactTreeInclosureTests {
         StandardInstallArtifactRefreshHandler refreshHelper = new StandardInstallArtifactRefreshHandler(installEnvironmentFactory, refreshPipeline);
 
         bundleContext.registerService(InstallArtifactTreeFactory.class.getName(), new BundleInstallArtifactTreeFactory(this.osgiFramework,
-            bundleContext, refreshHelper, this.bundleStarter, this.tracingService, this.packageAdminUtil, userRegionBundleContext, new MockEventLogger(), null), null);
+            bundleContext, refreshHelper, this.bundleStarter, this.tracingService, this.packageAdminUtil, userRegionBundleContext,
+            new MockEventLogger(), null), null);
 
-        this.installArtifactFactory = new StandardInstallArtifactTreeInclosure(this.artifactStorageFactory, bundleContext, this.repository,
-            new MockEventLogger(), artifactIdentityDeterminer);
+        DelegatingServiceRegistryBackedInstallArtifactTreeFactory treeFactroyDelegate = new DelegatingServiceRegistryBackedInstallArtifactTreeFactory(
+            bundleContext);
+        treeFactroyDelegate.init();
+
+        this.installArtifactFactory = new StandardInstallArtifactTreeInclosure(this.artifactStorageFactory, this.repository, new MockEventLogger(),
+            artifactIdentityDeterminer, new StandardRepositoryArtifactSpecificationLookup(repository), treeFactroyDelegate);
 
         ArtifactSpecification specification = new ArtifactSpecification("bundle", "a", new VersionRange("2.0.0"));
         InstallArtifact installArtifact = this.installArtifactFactory.createInstallTree(specification).getValue();
@@ -146,6 +160,7 @@ public class StandardInstallArtifactTreeInclosureTests {
         BundleInstallArtifact bundleInstallArtifact = (BundleInstallArtifact) installArtifact;
         assertEquals("a", bundleInstallArtifact.getBundleManifest().getBundleSymbolicName().getSymbolicName());
 
+        treeFactroyDelegate.destroy();
         verifyMocks();
         resetMocks();
     }
@@ -156,6 +171,13 @@ public class StandardInstallArtifactTreeInclosureTests {
         StubBundleContext userRegionBundleContext = new StubBundleContext();
         expect(this.osgiFramework.getBundleContext()).andReturn(bundleContext).anyTimes();
 
+        // add filters for service trackers
+        try {
+            bundleContext.addFilter(FrameworkUtil.createFilter("(objectClass=org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory)"));
+        } catch (InvalidSyntaxException e) {
+            throw new DeploymentException(e.getMessage(), e);
+        }
+
         replayMocks();
 
         StandardArtifactIdentityDeterminer artifactIdentityDeterminer = new StandardArtifactIdentityDeterminer(testArtifactBridges);
@@ -163,14 +185,20 @@ public class StandardInstallArtifactTreeInclosureTests {
         StandardInstallArtifactRefreshHandler refreshHelper = new StandardInstallArtifactRefreshHandler(installEnvironmentFactory, refreshPipeline);
 
         bundleContext.registerService(InstallArtifactTreeFactory.class.getName(), new BundleInstallArtifactTreeFactory(this.osgiFramework,
-            bundleContext, refreshHelper, this.bundleStarter, this.tracingService, this.packageAdminUtil, userRegionBundleContext, new MockEventLogger(), null), null);
+            bundleContext, refreshHelper, this.bundleStarter, this.tracingService, this.packageAdminUtil, userRegionBundleContext,
+            new MockEventLogger(), null), null);
 
-        this.installArtifactFactory = new StandardInstallArtifactTreeInclosure(this.artifactStorageFactory, bundleContext, this.repository,
-            new MockEventLogger(), artifactIdentityDeterminer);
+        DelegatingServiceRegistryBackedInstallArtifactTreeFactory treeFactroyDelegate = new DelegatingServiceRegistryBackedInstallArtifactTreeFactory(
+            bundleContext);
+        treeFactroyDelegate.init();
+
+        this.installArtifactFactory = new StandardInstallArtifactTreeInclosure(this.artifactStorageFactory, this.repository, new MockEventLogger(),
+            artifactIdentityDeterminer, new StandardRepositoryArtifactSpecificationLookup(repository), treeFactroyDelegate);
 
         Tree<InstallArtifact> installArtifactTree = this.installArtifactFactory.createInstallTree(new File(this.bundleURI));
         checkBundleImplicitTypeAndVersion(installArtifactTree.getValue());
 
+        treeFactroyDelegate.destroy();
         verifyMocks();
         resetMocks();
     }
@@ -181,6 +209,13 @@ public class StandardInstallArtifactTreeInclosureTests {
         StubBundleContext userRegionBundleContext = new StubBundleContext();
         expect(this.osgiFramework.getBundleContext()).andReturn(bundleContext).anyTimes();
 
+        // add filters for service trackers
+        try {
+            bundleContext.addFilter(FrameworkUtil.createFilter("(objectClass=org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory)"));
+        } catch (InvalidSyntaxException e) {
+            throw new DeploymentException(e.getMessage(), e);
+        }
+
         replayMocks();
 
         StandardArtifactIdentityDeterminer artifactIdentityDeterminer = new StandardArtifactIdentityDeterminer(testArtifactBridges);
@@ -188,10 +223,15 @@ public class StandardInstallArtifactTreeInclosureTests {
         StandardInstallArtifactRefreshHandler refreshHelper = new StandardInstallArtifactRefreshHandler(installEnvironmentFactory, refreshPipeline);
 
         bundleContext.registerService(InstallArtifactTreeFactory.class.getName(), new BundleInstallArtifactTreeFactory(this.osgiFramework,
-            bundleContext, refreshHelper, this.bundleStarter, this.tracingService, this.packageAdminUtil, userRegionBundleContext, new MockEventLogger(), null), null);
+            bundleContext, refreshHelper, this.bundleStarter, this.tracingService, this.packageAdminUtil, userRegionBundleContext,
+            new MockEventLogger(), null), null);
 
-        this.installArtifactFactory = new StandardInstallArtifactTreeInclosure(this.artifactStorageFactory, bundleContext, this.repository,
-            new MockEventLogger(), artifactIdentityDeterminer);
+        DelegatingServiceRegistryBackedInstallArtifactTreeFactory treeFactroyDelegate = new DelegatingServiceRegistryBackedInstallArtifactTreeFactory(
+            bundleContext);
+        treeFactroyDelegate.init();
+
+        this.installArtifactFactory = new StandardInstallArtifactTreeInclosure(this.artifactStorageFactory, this.repository, new MockEventLogger(),
+            artifactIdentityDeterminer, new StandardRepositoryArtifactSpecificationLookup(repository), treeFactroyDelegate);
 
         Tree<InstallArtifact> installArtifactTree = this.installArtifactFactory.createInstallTree(new File("src/test/resources/artifacts/nobsn.jar"));
         InstallArtifact installArtifact = installArtifactTree.getValue();
@@ -200,6 +240,7 @@ public class StandardInstallArtifactTreeInclosureTests {
         assertEquals("nobsn", installArtifact.getName());
         assertEquals(new Version("0"), installArtifact.getVersion());
 
+        treeFactroyDelegate.destroy();
         verifyMocks();
         resetMocks();
     }
@@ -210,17 +251,29 @@ public class StandardInstallArtifactTreeInclosureTests {
         StubBundleContext userRegionBundleContext = new StubBundleContext();
         expect(this.osgiFramework.getBundleContext()).andReturn(bundleContext).anyTimes();
 
+        // add filters for service trackers
+        try {
+            bundleContext.addFilter(FrameworkUtil.createFilter("(objectClass=org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory)"));
+        } catch (InvalidSyntaxException e) {
+            throw new DeploymentException(e.getMessage(), e);
+        }
+
         replayMocks();
 
         StandardInstallArtifactRefreshHandler refreshHelper = new StandardInstallArtifactRefreshHandler(installEnvironmentFactory, refreshPipeline);
 
         StandardArtifactIdentityDeterminer artifactIdentityDeterminer = new StandardArtifactIdentityDeterminer(testArtifactBridges);
+
+        DelegatingServiceRegistryBackedInstallArtifactTreeFactory treeFactroyDelegate = new DelegatingServiceRegistryBackedInstallArtifactTreeFactory(
+            bundleContext);
+        treeFactroyDelegate.init();
         
         bundleContext.registerService(InstallArtifactTreeFactory.class.getName(), new BundleInstallArtifactTreeFactory(this.osgiFramework,
-            bundleContext, refreshHelper, this.bundleStarter, this.tracingService, this.packageAdminUtil, userRegionBundleContext, new MockEventLogger(), null), null);
+            bundleContext, refreshHelper, this.bundleStarter, this.tracingService, this.packageAdminUtil, userRegionBundleContext,
+            new MockEventLogger(), null), null);
 
-        this.installArtifactFactory = new StandardInstallArtifactTreeInclosure(this.artifactStorageFactory, bundleContext, this.repository,
-            new MockEventLogger(), artifactIdentityDeterminer);
+        this.installArtifactFactory = new StandardInstallArtifactTreeInclosure(this.artifactStorageFactory, this.repository, new MockEventLogger(),
+            artifactIdentityDeterminer, new StandardRepositoryArtifactSpecificationLookup(repository), treeFactroyDelegate);
 
         Tree<InstallArtifact> installArtifactTree = this.installArtifactFactory.createInstallTree(new File(this.bundleURI));
         checkBundleImplicitTypeAndVersion(installArtifactTree.getValue());
@@ -229,6 +282,7 @@ public class StandardInstallArtifactTreeInclosureTests {
         Tree<InstallArtifact> recoveredInstallTree = this.installArtifactFactory.recoverInstallTree(new File(this.bundleURI), deploymentOptions);
         checkBundleImplicitTypeAndVersion(recoveredInstallTree.getValue());
 
+        treeFactroyDelegate.destroy();
         verifyMocks();
         resetMocks();
     }

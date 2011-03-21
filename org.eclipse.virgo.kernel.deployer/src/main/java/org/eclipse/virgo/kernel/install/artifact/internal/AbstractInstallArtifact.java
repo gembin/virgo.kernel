@@ -86,7 +86,7 @@ public abstract class AbstractInstallArtifact implements InstallArtifact {
         this.isRefreshing = false;
     }
 
-    final ArtifactIdentity getIdentity() {
+    protected final ArtifactIdentity getIdentity() {
         return this.identity;
     }
 

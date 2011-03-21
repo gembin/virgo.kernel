@@ -13,31 +13,27 @@ package org.eclipse.virgo.kernel.install.artifact.internal;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.virgo.kernel.artifact.ArtifactSpecification;
+import org.eclipse.virgo.kernel.artifact.ArtifactSpecificationLookupStrategy;
 import org.eclipse.virgo.kernel.deployer.core.DeployerLogEvents;
 import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
 import org.eclipse.virgo.kernel.deployer.core.DeploymentOptions;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentity;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentityDeterminer;
-import org.eclipse.virgo.kernel.install.artifact.ArtifactSpecificationBridge;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
+import org.eclipse.virgo.kernel.install.artifact.ArtifactStorageFactory;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifact;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeInclosure;
 import org.eclipse.virgo.kernel.install.artifact.internal.scoping.ArtifactIdentityScoper;
-import org.eclipse.virgo.kernel.osgi.framework.OsgiFrameworkUtils;
-import org.eclipse.virgo.kernel.osgi.framework.OsgiServiceHolder;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.medic.eventlog.EventLogger;
 import org.eclipse.virgo.repository.Repository;
 import org.eclipse.virgo.repository.RepositoryAwareArtifactDescriptor;
 import org.eclipse.virgo.util.common.Tree;
 import org.eclipse.virgo.util.osgi.VersionRange;
-import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,27 +53,25 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
 
     private final EventLogger eventLogger;
 
-    private final BundleContext bundleContext;
-
     private final Repository repository;
 
     private final ArtifactStorageFactory artifactStorageFactory;
 
     private final ArtifactIdentityDeterminer artifactIdentityDeterminer;
 
-    // TODO: these values can potentially be injected or looked up dynamically. Validate
-    private final List<ArtifactSpecificationBridge> artifactSpecificationBridges;
+    private final ArtifactSpecificationLookupStrategy artifactSpecificationLookup;
 
-    public StandardInstallArtifactTreeInclosure(@NonNull ArtifactStorageFactory artifactStorageFactory, @NonNull BundleContext bundleContext,
-        @NonNull Repository repository, @NonNull EventLogger eventLogger, @NonNull ArtifactIdentityDeterminer artifactIdentityDeterminer) {
+    private final InstallArtifactTreeFactory installArtifactTreeFactory;
+
+    public StandardInstallArtifactTreeInclosure(@NonNull ArtifactStorageFactory artifactStorageFactory, @NonNull Repository repository,
+        @NonNull EventLogger eventLogger, @NonNull ArtifactIdentityDeterminer artifactIdentityDeterminer,
+        @NonNull ArtifactSpecificationLookupStrategy artifactSpecificationLookup, @NonNull InstallArtifactTreeFactory installArtifactTreeFactory) {
         this.repository = repository;
         this.artifactStorageFactory = artifactStorageFactory;
         this.eventLogger = eventLogger;
-        this.bundleContext = bundleContext;
         this.artifactIdentityDeterminer = artifactIdentityDeterminer;
-
-        this.artifactSpecificationBridges = Arrays.asList(new FactoryConfigArtifactSpecificationBridge(),
-            new StandardRepositoryArtifactSpecificationBridge(this.repository));
+        this.artifactSpecificationLookup = artifactSpecificationLookup;
+        this.installArtifactTreeFactory = installArtifactTreeFactory;
     }
 
     /**
@@ -97,13 +91,7 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
         String name = specification.getName();
         VersionRange versionRange = specification.getVersionRange();
 
-        RepositoryAwareArtifactDescriptor artifactDescriptor = null;
-        for (ArtifactSpecificationBridge bridge : this.artifactSpecificationBridges) {
-            artifactDescriptor = bridge.generateArtifactDescriptor(specification);
-            if (artifactDescriptor != null) {
-                break;
-            }
-        }
+        RepositoryAwareArtifactDescriptor artifactDescriptor = this.artifactSpecificationLookup.lookup(specification);
 
         if (artifactDescriptor == null) {
             this.eventLogger.log(DeployerLogEvents.ARTIFACT_NOT_FOUND, type, name, versionRange, this.repository.getName());
@@ -111,18 +99,10 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
         }
 
         URI artifactURI = artifactDescriptor.getUri();
-
         ArtifactIdentity identity = new ArtifactIdentity(type, name, artifactDescriptor.getVersion(), scopeName);
         identity = ArtifactIdentityScoper.scopeArtifactIdentity(identity);
 
-        // TODO: Need a better way to skip creating of ArtifactStorage or have ArtifactStorage deal with a URI
-        // XXX: Not sure how to deal with situations where ArtifactDescriptor is a "virtual", i.e. does not have a
-        // source file/uri (example: factory-configuration that is just a key to look up actual configurations in
-        // repositories)
-        ArtifactStorage artifactStorage = null;
-        if (artifactURI != null) {
-            artifactStorage = this.artifactStorageFactory.create(new File(artifactURI), identity);
-        }
+        ArtifactStorage artifactStorage = this.artifactStorageFactory.create(artifactURI, identity);
 
         Tree<InstallArtifact> installArtifactTree = constructInstallArtifactTree(identity, specification.getProperties(), artifactStorage,
             artifactDescriptor.getRepositoryName());
@@ -169,24 +149,8 @@ public final class StandardInstallArtifactTreeInclosure implements InstallArtifa
 
     private Tree<InstallArtifact> constructInstallArtifactTree(ArtifactIdentity identity, Map<String, String> deploymentProperties,
         ArtifactStorage artifactStorage, String repositoryName) throws DeploymentException {
-        Tree<InstallArtifact> tree = null;
-        List<OsgiServiceHolder<InstallArtifactTreeFactory>> iatfHolders = OsgiFrameworkUtils.getServices(this.bundleContext,
-            InstallArtifactTreeFactory.class);
-
-        for (OsgiServiceHolder<InstallArtifactTreeFactory> iatfHolder : iatfHolders) {
-
-            InstallArtifactTreeFactory iatf = iatfHolder.getService();
-            try {
-                if (iatf != null) {
-                    tree = iatf.constructInstallArtifactTree(identity, artifactStorage, deploymentProperties, repositoryName);
-                    if (tree != null) {
-                        break;
-                    }
-                }
-            } finally {
-                this.bundleContext.ungetService(iatfHolder.getServiceReference());
-            }
-        }
+        Tree<InstallArtifact> tree = this.installArtifactTreeFactory.constructInstallArtifactTree(identity, artifactStorage, deploymentProperties,
+            repositoryName);
 
         if (tree == null) {
             this.eventLogger.log(DeployerLogEvents.MISSING_ARTIFACT_FACTORY, identity.getType(), identity.getName(), identity.getVersion());

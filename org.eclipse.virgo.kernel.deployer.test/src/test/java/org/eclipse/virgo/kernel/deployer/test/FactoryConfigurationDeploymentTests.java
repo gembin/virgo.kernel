@@ -139,7 +139,7 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
         this.appDeployer.undeploy(deploymentIdentity);
 
         // give time for events to percolate
-        Thread.sleep(1000);
+        Thread.sleep(3000);
 
         assertEquals(0, countFactoryConfigurations(this.configAdmin, "test.factory.pid.a"));
         assertEquals(1, service.updateCount());

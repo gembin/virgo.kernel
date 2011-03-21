@@ -9,7 +9,7 @@
  *   VMware Inc. - initial contribution
  *******************************************************************************/
 
-package org.eclipse.virgo.kernel.install.artifact.internal;
+package org.eclipse.virgo.kernel.install.artifact.internal.config;
 
 
 import org.eclipse.virgo.kernel.core.AbortableSignal;
@@ -17,6 +17,11 @@ import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentity;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifact;
+import org.eclipse.virgo.kernel.install.artifact.internal.AbstractInstallArtifact;
+import org.eclipse.virgo.kernel.install.artifact.internal.ArtifactStateMonitor;
+import org.eclipse.virgo.kernel.install.artifact.internal.RefreshEngine;
+import org.eclipse.virgo.kernel.install.artifact.internal.StartEngine;
+import org.eclipse.virgo.kernel.install.artifact.internal.StopEngine;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.medic.eventlog.EventLogger;
 

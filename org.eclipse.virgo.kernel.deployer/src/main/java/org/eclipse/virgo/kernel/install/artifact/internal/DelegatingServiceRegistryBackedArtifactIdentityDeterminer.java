@@ -29,7 +29,9 @@ import org.osgi.util.tracker.ServiceTracker;
  * Thread-safe.
  * 
  */
-public class DelegatingServiceRegistryBackedArtifactIdentityDeterminer implements ArtifactIdentityDeterminer {
+final class DelegatingServiceRegistryBackedArtifactIdentityDeterminer implements ArtifactIdentityDeterminer {
+    
+    private static final ArtifactIdentityDeterminer[] EMPTY_TRACKED_ARRAY = new ArtifactIdentityDeterminer[] {};
     
     private final ServiceTracker<ArtifactIdentityDeterminer, ArtifactIdentityDeterminer> serviceTracker;
 
@@ -52,12 +54,12 @@ public class DelegatingServiceRegistryBackedArtifactIdentityDeterminer implement
      * {@inheritDoc}
      */
     public ArtifactIdentity determineIdentity(File file, String scopeName) {
-        Object[] services = this.serviceTracker.getServices();
+        ArtifactIdentityDeterminer[] services = this.serviceTracker.getServices(EMPTY_TRACKED_ARRAY);
         
         if (services != null) {
-            for (Object service : services) {
+            for (ArtifactIdentityDeterminer service : services) {
                 if (service != null) {
-                    ArtifactIdentity identity = ((ArtifactIdentityDeterminer)service).determineIdentity(file, scopeName);
+                    ArtifactIdentity identity = service.determineIdentity(file, scopeName);
                     if (identity != null) {
                         return identity;
                     }

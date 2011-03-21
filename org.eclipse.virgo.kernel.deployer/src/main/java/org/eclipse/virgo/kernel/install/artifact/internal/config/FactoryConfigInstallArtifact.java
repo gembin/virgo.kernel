@@ -11,76 +11,36 @@
  *    dsklyut - initial contribution
  */
 
-package org.eclipse.virgo.kernel.install.artifact.internal;
+package org.eclipse.virgo.kernel.install.artifact.internal.config;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.virgo.kernel.artifact.fs.ArtifactFS;
 import org.eclipse.virgo.kernel.core.AbortableSignal;
 import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
 import org.eclipse.virgo.kernel.deployer.core.internal.AbortableSignalJunction;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentity;
-import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifact;
+import org.eclipse.virgo.kernel.install.artifact.internal.AbstractInstallArtifact;
+import org.eclipse.virgo.kernel.install.artifact.internal.ArtifactStateMonitor;
 import org.eclipse.virgo.kernel.serviceability.NonNull;
 import org.eclipse.virgo.medic.eventlog.EventLogger;
 import org.eclipse.virgo.repository.RepositoryAwareArtifactDescriptor;
 import org.eclipse.virgo.util.common.Tree;
 
 /**
- * TODO Document FactoryConfigInstallArtifact
+ * A factory configuration is a "virtual" artifact that cannot be looked up individually in Repository, but acts as a
+ * container for individual instances of configurations and manages their lifecycle.
  * <p />
  * 
  * <strong>Concurrent Semantics</strong><br />
- * TODO Document concurrent semantics of FactoryConfigInstallArtifact
+ * Thread Safe
  */
 public final class FactoryConfigInstallArtifact extends AbstractInstallArtifact {
-    
-    private static final class NoOpArtifactStorage implements ArtifactStorage {
-
-        /** 
-         * {@inheritDoc}
-         */
-        @Override
-        public void synchronize() {
-        }
-
-        /** 
-         * {@inheritDoc}
-         */
-        @Override
-        public void synchronize(URI sourceUri) {
-        }
-
-        /** 
-         * {@inheritDoc}
-         */
-        @Override
-        public void rollBack() {
-        }
-
-        /** 
-         * {@inheritDoc}
-         */
-        @Override
-        public void delete() {            
-        }
-
-        /** 
-         * {@inheritDoc}
-         */
-        @Override
-        public ArtifactFS getArtifactFS() {
-            return null;
-        }
         
-    }
-    
     private final Object monitor = new Object();
 
     private Set<RepositoryAwareArtifactDescriptor> artifacts;
@@ -91,9 +51,10 @@ public final class FactoryConfigInstallArtifact extends AbstractInstallArtifact 
     FactoryConfigInstallArtifact(@NonNull ArtifactIdentity identity, @NonNull ArtifactStateMonitor artifactStateMonitor, EventLogger eventLogger,
         @NonNull Set<RepositoryAwareArtifactDescriptor> artifacts) throws DeploymentException {
 
+        // there is no repository name - as this artifact can contain artifacts from multiple repositories.
         super(identity, new NoOpArtifactStorage() , artifactStateMonitor, null, eventLogger);
 
-        // make a copy of input list
+        // make a copy of input
         this.artifacts = new HashSet<RepositoryAwareArtifactDescriptor>(artifacts);
 
     }
@@ -129,7 +90,6 @@ public final class FactoryConfigInstallArtifact extends AbstractInstallArtifact 
 
             childArtifact.start(subSignal);
         }
-
     }
 
     /**
@@ -148,7 +108,6 @@ public final class FactoryConfigInstallArtifact extends AbstractInstallArtifact 
         if (firstFailure != null) {
             throw firstFailure;
         }
-
     }
 
     /**
@@ -174,7 +133,6 @@ public final class FactoryConfigInstallArtifact extends AbstractInstallArtifact 
      */
     @Override
     protected boolean doRefresh() throws DeploymentException {
-        // TODO: potentially re-fetch configurations from repository and doStop/doStart on those???
         return false;
     }
 

@@ -45,11 +45,8 @@ public final class PropertiesBridge implements ArtifactBridge {
 
     private final HashGenerator hashGenerator;
 
-    private final ConfigurationAdmin configAdmin;
-
-    public PropertiesBridge(HashGenerator hashGenerator, ConfigurationAdmin configAdmin) {
+    public PropertiesBridge(HashGenerator hashGenerator) {
         this.hashGenerator = hashGenerator;
-        this.configAdmin = configAdmin;
     }
 
     public ArtifactDescriptor generateArtifactDescriptor(File artifactFile) throws ArtifactGenerationException {
@@ -79,8 +76,7 @@ public final class PropertiesBridge implements ArtifactBridge {
 
         name = properties.getProperty(Constants.SERVICE_PID);
         if (!StringUtils.hasText(name)) {
-            String fileName = propertiesFile.getName();
-            name = fileName.substring(0, fileName.length() - PROPERTIES_SUFFIX.length());
+            name = pidFromFileName(propertiesFile);
         }
 
         return buildAtrifactDescriptor(propertiesFile, name).build();
@@ -96,8 +92,10 @@ public final class PropertiesBridge implements ArtifactBridge {
     private ArtifactDescriptor buildForManagedServiceFactoryConfiguration(File propertiesFile, String factoryPid, Properties properties)
         throws IOException {
 
-        // generated service.pid - will use as a name for artifactId
-        String pid = configAdmin.createFactoryConfiguration(factoryPid, null).getPid();
+        // generated based on the factoryPid and the file name. Should be unique enough
+        // deployed artifact will be deployed with a different pid - because configAdmin generates PID for factory
+        // configurations.
+        String pid = factoryPid + "-" + pidFromFileName(propertiesFile);
 
         ArtifactDescriptorBuilder builder = buildAtrifactDescriptor(propertiesFile, pid);
         builder.addAttribute(new AttributeBuilder().setName(ConfigurationAdmin.SERVICE_FACTORYPID).setValue(factoryPid).build());
@@ -117,5 +115,15 @@ public final class PropertiesBridge implements ArtifactBridge {
         this.hashGenerator.generateHash(artifactDescriptorBuilder, propertiesFile);
 
         return artifactDescriptorBuilder;
+    }
+
+    // package private for testing
+    static String generateFactoryPid(String factoryPid, File propertiesFile) {
+        return factoryPid + "-" + pidFromFileName(propertiesFile);
+    }
+
+    static String pidFromFileName(File propertiesFile) {
+        String fileName = propertiesFile.getName();
+        return fileName.substring(0, fileName.length() - PROPERTIES_SUFFIX.length());
     }
 }

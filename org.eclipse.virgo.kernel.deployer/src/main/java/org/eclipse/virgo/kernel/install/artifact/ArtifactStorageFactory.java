@@ -9,12 +9,11 @@
  *   VMware Inc. - initial contribution
  *******************************************************************************/
 
-package org.eclipse.virgo.kernel.install.artifact.internal;
+package org.eclipse.virgo.kernel.install.artifact;
 
 import java.io.File;
+import java.net.URI;
 
-import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentity;
-import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
 
 
 /**
@@ -28,6 +27,16 @@ import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
  * 
  */
 public interface ArtifactStorageFactory {
+    
+    /**
+     * Creates a new <code>ArtifactStorage</code> for the artifact in the given <code>URI</code>. The artifact has the
+     * supplied <code>artifactIdentity</code>.
+     * 
+     * @param artifact The artifact's <code>URI</code>.
+     * @param artifactIdentity The identity of the artifact for which storage is being created
+     * @return <code>ArtifactStorage</code> for the artifact.
+     */
+    ArtifactStorage create(URI artifact, ArtifactIdentity artifactIdentity);
 
     /**
      * Creates a new <code>ArtifactStorage</code> for the artifact in the given <code>File</code>. The artifact has the

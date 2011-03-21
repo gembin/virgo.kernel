@@ -27,7 +27,7 @@
 		<beans:constructor-arg ref="recoveryLog" />
 	</beans:bean>
 
-	<beans:bean id="artifactStorageFactory"
+	<beans:bean id="standardArtifactStorageFactory"
 		class="org.eclipse.virgo.kernel.install.artifact.internal.StandardArtifactStorageFactory">
 		<beans:constructor-arg value="#{workArea.workDirectory}" />
 		<beans:constructor-arg>
@@ -35,6 +35,12 @@
 				class="org.eclipse.virgo.kernel.artifact.fs.StandardArtifactFSFactory" />
 		</beans:constructor-arg>
 		<beans:constructor-arg ref="eventLogger" />
+	</beans:bean>
+
+	<beans:bean id="artifactStorageFactory"
+		class="org.eclipse.virgo.kernel.install.artifact.internal.DelegatingServiceRegistryBackedArtifactStorageFactory">
+		<beans:constructor-arg ref="bundleContext" />
+		<beans:constructor-arg ref="standardArtifactStorageFactory" />
 	</beans:bean>
 
 	<beans:bean id="syntheticContextCreatingTransformer"
@@ -65,16 +71,18 @@
 	<beans:bean id="userInstalledTaggingTransformer"
 		class="org.eclipse.virgo.kernel.install.pipeline.stage.transform.internal.UserInstalledTaggingTransformer" />
 
-    <beans:bean id="factoryConfigurationResolver" class="org.eclipse.virgo.kernel.deployer.core.internal.FactoryConfigurationResolver">
-        <beans:constructor-arg ref="artifactStorageFactory"/>
-        <beans:constructor-arg ref="configInstallArtifactTreeFactory"/>
-    </beans:bean>
+	<beans:bean id="factoryConfigurationResolver"
+		class="org.eclipse.virgo.kernel.deployer.core.internal.FactoryConfigurationResolver">
+		<beans:constructor-arg ref="artifactStorageFactory" />
+		<beans:constructor-arg ref="configInstallArtifactTreeFactory" />
+	</beans:bean>
 
 	<service
 		interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
 		ref="planResolver" ranking="1000" />
-	<service interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
-        ref="factoryConfigurationResolver" ranking="1050" />
+	<service
+		interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
+		ref="factoryConfigurationResolver" ranking="1050" />
 	<service
 		interface="org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer"
 		ref="bundleManifestVersionUpgrader" ranking="2000" />
@@ -176,10 +184,11 @@
 	<beans:bean id="installArtifactTreeInclosure"
 		class="org.eclipse.virgo.kernel.install.artifact.internal.StandardInstallArtifactTreeInclosure">
 		<beans:constructor-arg ref="artifactStorageFactory" />
-		<beans:constructor-arg ref="bundleContext" />
 		<beans:constructor-arg ref="repository" />
 		<beans:constructor-arg ref="eventLogger" />
 		<beans:constructor-arg ref="artifactIdentityDeterminer" />
+		<beans:constructor-arg ref="artifactSpecificationLookupStrategy" />
+		<beans:constructor-arg ref="installArtifactTreeFactory" />
 	</beans:bean>
 
 	<beans:bean id="installEnvironmentFactory"
@@ -283,7 +292,7 @@
 		interface="org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory" />
 
 	<beans:bean id="configInstallArtifactTreeFactory"
-		class="org.eclipse.virgo.kernel.install.artifact.internal.ConfigInstallArtifactTreeFactory">
+		class="org.eclipse.virgo.kernel.install.artifact.internal.config.ConfigInstallArtifactTreeFactory">
 		<beans:constructor-arg ref="bundleContext" />
 		<beans:constructor-arg ref="configAdmin" />
 		<beans:constructor-arg ref="eventLogger" />
@@ -314,15 +323,42 @@
 			class="org.eclipse.virgo.kernel.install.artifact.internal.AtomicInstallArtifactLifecycleListener" />
 	</service>
 
-	<beans:bean id="factoryConfigInstallArtifactTreeFactory"
-		class="org.eclipse.virgo.kernel.install.artifact.internal.FactoryConfigInstallArtifactTreeFactory">
-		<beans:constructor-arg ref="bundleContext"/>
-		<beans:constructor-arg ref="repository" />
-		<beans:constructor-arg ref="eventLogger" />
+	<service
+		interface="org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory">
+		<beans:bean
+			class="org.eclipse.virgo.kernel.install.artifact.internal.config.FactoryConfigInstallArtifactTreeFactory">
+			<beans:constructor-arg ref="bundleContext" />
+			<beans:constructor-arg ref="repository" />
+			<beans:constructor-arg ref="eventLogger" />
+		</beans:bean>
+	</service>
+
+	<service
+		interface="org.eclipse.virgo.kernel.artifact.ArtifactSpecificationLookupStrategy">
+		<beans:bean
+			class="org.eclipse.virgo.kernel.install.artifact.internal.config.FactoryConfigArtifactSpecificationLookup" />
+	</service>
+
+	<service
+		interface="org.eclipse.virgo.kernel.install.artifact.ArtifactStorageFactory">
+		<beans:bean
+			class="org.eclipse.virgo.kernel.install.artifact.internal.config.FactoryConfigArtifactStorageFactory" />
+	</service>
+
+	<beans:bean id="artifactSpecificationLookupStrategy"
+		class="org.eclipse.virgo.kernel.install.artifact.internal.DelegatingServiceRegistryBackedArtifactSpecificationLookup">
+		<beans:constructor-arg ref="bundleContext" />
+		<beans:constructor-arg>
+			<beans:bean
+				class="org.eclipse.virgo.kernel.install.artifact.internal.StandardRepositoryArtifactSpecificationLookup">
+				<beans:constructor-arg ref="repository" />
+			</beans:bean>
+		</beans:constructor-arg>
 	</beans:bean>
 
-	<service ref="factoryConfigInstallArtifactTreeFactory"
-		interface="org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory" />
-
-
+	<beans:bean id="installArtifactTreeFactory"
+		class="org.eclipse.virgo.kernel.install.artifact.internal.DelegatingServiceRegistryBackedInstallArtifactTreeFactory"
+		init-method="init" destroy-method="destroy">
+		<beans:constructor-arg ref="bundleContext" />
+	</beans:bean>
 </beans:beans>

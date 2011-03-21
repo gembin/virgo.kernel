@@ -15,7 +15,7 @@ import org.eclipse.virgo.kernel.artifact.fs.ArtifactFS;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentity;
 
 
-interface StartEngine {
+public interface StartEngine {
 
     void start(ArtifactIdentity artifactIdentity, ArtifactFS artifactFS) throws StartException;
 }

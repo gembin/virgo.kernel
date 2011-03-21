@@ -12,11 +12,13 @@
 package org.eclipse.virgo.kernel.install.artifact.internal;
 
 import java.io.File;
+import java.net.URI;
 
 
 import org.eclipse.virgo.kernel.artifact.fs.ArtifactFSFactory;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentity;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
+import org.eclipse.virgo.kernel.install.artifact.ArtifactStorageFactory;
 import org.eclipse.virgo.medic.eventlog.EventLogger;
 import org.eclipse.virgo.util.io.PathReference;
 
@@ -46,7 +48,16 @@ public final class StandardArtifactStorageFactory implements ArtifactStorageFact
         this.artifactFSFactory = artifactFSFactory;
         this.eventLogger = eventLogger;
     }
+    
+    /** 
+     * {@inheritDoc}
+     */
+    @Override
+    public ArtifactStorage create(URI artifact, ArtifactIdentity artifactIdentity) {
+        return create(new File(artifact), artifactIdentity);
+    }
 
+    @Override
     public ArtifactStorage create(File file, ArtifactIdentity artifactIdentity) {
         PathReference sourcePathReference = new PathReference(file);
         PathReference stagingPathReference = createStagingPathReference(artifactIdentity, file.getName());
@@ -54,6 +65,7 @@ public final class StandardArtifactStorageFactory implements ArtifactStorageFact
         return new StandardArtifactStorage(sourcePathReference, stagingPathReference, this.artifactFSFactory, this.eventLogger);
     }
 
+    @Override
     public ArtifactStorage createDirectoryStorage(ArtifactIdentity artifactIdentity, String directoryName) {
         PathReference stagingPathReference = createStagingPathReference(artifactIdentity, directoryName);
         stagingPathReference.createDirectory();

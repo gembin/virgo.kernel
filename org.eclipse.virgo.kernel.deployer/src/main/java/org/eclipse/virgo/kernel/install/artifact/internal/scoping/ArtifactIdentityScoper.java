@@ -11,6 +11,9 @@
 
 package org.eclipse.virgo.kernel.install.artifact.internal.scoping;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentity;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentityDeterminer;
 
@@ -28,6 +31,12 @@ public class ArtifactIdentityScoper {
     
     private static final String SCOPE_SEPARATOR = "-";
     
+    private static final Set<String> unscoppedArtifactTypes = new HashSet<String>();
+    static {
+        unscoppedArtifactTypes.add(ArtifactIdentityDeterminer.CONFIGURATION_TYPE);
+        unscoppedArtifactTypes.add(ArtifactIdentityDeterminer.FACTORY_CONFIGURATION_TYPE);
+    }
+    
     /**
      * Scopes the supplied <code>ArtifactIdentity</code>.
      * 
@@ -38,7 +47,7 @@ public class ArtifactIdentityScoper {
         
         String scopeName = artifactIdentity.getScopeName();
         
-        if (scopeName != null && !ArtifactIdentityDeterminer.CONFIGURATION_TYPE.equals(artifactIdentity.getType())) {
+        if (scopeName != null && !unscoppedArtifactTypes.contains(artifactIdentity.getType())) {
             String scopedName = scopeName + SCOPE_SEPARATOR + artifactIdentity.getName();
             return new ArtifactIdentity(artifactIdentity.getType(), scopedName, artifactIdentity.getVersion(), scopeName);
         } else {

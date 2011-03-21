@@ -22,11 +22,11 @@ import java.util.Set;
 import org.eclipse.virgo.kernel.deployer.core.DeploymentException;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactIdentity;
 import org.eclipse.virgo.kernel.install.artifact.ArtifactStorage;
+import org.eclipse.virgo.kernel.install.artifact.ArtifactStorageFactory;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifact;
 import org.eclipse.virgo.kernel.install.artifact.InstallArtifactTreeFactory;
 import org.eclipse.virgo.kernel.install.artifact.internal.AbstractInstallArtifact;
-import org.eclipse.virgo.kernel.install.artifact.internal.ArtifactStorageFactory;
-import org.eclipse.virgo.kernel.install.artifact.internal.FactoryConfigInstallArtifact;
+import org.eclipse.virgo.kernel.install.artifact.internal.config.FactoryConfigInstallArtifact;
 import org.eclipse.virgo.kernel.install.artifact.internal.scoping.ArtifactIdentityScoper;
 import org.eclipse.virgo.kernel.install.environment.InstallEnvironment;
 import org.eclipse.virgo.kernel.install.pipeline.stage.transform.Transformer;
@@ -37,14 +37,14 @@ import org.eclipse.virgo.util.common.Tree.ExceptionThrowingTreeVisitor;
 import org.osgi.framework.Version;
 
 /**
- * {@link FactoryConfigurationResolver} adds the immediate child nodes to a root factory config node.
+ * {@link FactoryConfigurationResolver} adds the immediate child nodes to a root factory configuration node.
  * <p />
  * 
  * <strong>Concurrent Semantics</strong><br />
  * 
  * This class is thread safe.
  */
-public class FactoryConfigurationResolver implements Transformer {
+final class FactoryConfigurationResolver implements Transformer {
 
     private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
 
@@ -97,22 +97,22 @@ public class FactoryConfigurationResolver implements Transformer {
     }
 
     /**
-     * @param artifactSpecification
+     * @param artifactDescriptor
      * @return
      * @throws DeploymentException
      */
-    private Tree<InstallArtifact> createInstallArtifactTree(RepositoryAwareArtifactDescriptor artifactSpecification, String scope)
+    private Tree<InstallArtifact> createInstallArtifactTree(RepositoryAwareArtifactDescriptor artifactDescriptor, String scope)
         throws DeploymentException {
-        final String type = artifactSpecification.getType();
-        final String name = artifactSpecification.getName();
-        final Version version = artifactSpecification.getVersion();
-        URI artifactURI = artifactSpecification.getUri();
+        final String type = artifactDescriptor.getType();
+        final String name = artifactDescriptor.getName();
+        final Version version = artifactDescriptor.getVersion();
+        URI artifactURI = artifactDescriptor.getUri();
 
         ArtifactIdentity identity = new ArtifactIdentity(type, name, version, scope);
         identity = ArtifactIdentityScoper.scopeArtifactIdentity(identity);
 
-        ArtifactStorage artifactStorage = this.artifactStorageFactory.create(new File(artifactURI), identity);
+        ArtifactStorage artifactStorage = this.artifactStorageFactory.create(artifactURI, identity);
         return this.configInstallArtifactTreeFactory.constructInstallArtifactTree(identity, artifactStorage, EMPTY_MAP,
-            artifactSpecification.getRepositoryName());
+            artifactDescriptor.getRepositoryName());
     }
 }
