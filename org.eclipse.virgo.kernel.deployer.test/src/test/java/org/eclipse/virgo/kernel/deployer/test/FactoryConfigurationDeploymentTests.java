@@ -40,7 +40,7 @@ import org.osgi.service.cm.ManagedServiceFactory;
 
 /**
  * Tests for Configuration artifacts that support ManagedServiceFactory
- *
+ * 
  */
 public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegrationTest {
 
@@ -357,6 +357,62 @@ public class FactoryConfigurationDeploymentTests extends AbstractDeployerIntegra
             }
             if (targetTwo.exists()) {
                 targetTwo.delete();
+            }
+        }
+    }
+
+    @Test
+    public void testChangeFactoryPidInExistingFile() throws Exception {
+        final String factoryPid = "test.factory.pid.hot.samefile";
+
+        final Properties configOne = new Properties();
+        configOne.setProperty(ConfigurationAdmin.SERVICE_FACTORYPID, factoryPid);
+        configOne.setProperty("prop1", "prop1");
+        configOne.setProperty("prop2", "1");
+
+        final Properties configTwo = new Properties();
+        configTwo.setProperty(ConfigurationAdmin.SERVICE_FACTORYPID, factoryPid + ".1");
+        configTwo.setProperty("prop1", "prop2");
+        configTwo.setProperty("prop2", "2");
+
+        final File target = new File("target/pickup/testChangeFactoryPidInExistingFile.properties");
+
+        if (target.exists()) {
+            assertTrue(target.delete());
+        }
+
+        try {
+
+            Hashtable<String, String> properties = new Hashtable<String, String>();
+            properties.put(Constants.SERVICE_PID, factoryPid);
+            TestManagedServiceFactory service = new TestManagedServiceFactory();
+            this.context.registerService(ManagedServiceFactory.class, service, properties);
+
+            // make sure that we are starting off with a clean slate
+            assertEquals(0, countFactoryConfigurations(this.configAdmin, factoryPid));
+
+            // copy file to hot deploy location
+            configOne.store(new FileOutputStream(target), "initial");
+
+            pollUntilFactoryInConfigurationAdmin(this.configAdmin, factoryPid);
+            // let events propagate
+            Thread.sleep(1000);
+            assertEquals(1, countFactoryConfigurations(this.configAdmin, factoryPid));
+            assertEquals(1, service.updateCount());
+            assertEquals(0, service.deleteCount());
+
+            // update with a different factoryPid -- should fail deployment.
+            configTwo.store(new FileOutputStream(target), "updated factorypid");
+            Thread.sleep(3000);
+            assertEquals(1, countFactoryConfigurations(this.configAdmin, factoryPid));
+            assertEquals(0, countFactoryConfigurations(this.configAdmin, factoryPid + ".1"));
+            // change to the existing file in hot deploy will not change the pid of the factory.
+            assertEquals(2, service.updateCount());
+            assertEquals(0, service.deleteCount());
+
+        } finally {
+            if (target.exists()) {
+                target.delete();
             }
         }
     }

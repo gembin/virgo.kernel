@@ -253,4 +253,61 @@ public class PlanFactoryConfigurationDeploymentTests extends AbstractDeployerInt
 
         registration.unregister();
     }
+
+    @Test
+    public void validateRefreshOfScopedPlan() throws Exception {
+
+        TestManagedServiceFactory service = new TestManagedServiceFactory();
+        Hashtable<String, String> properties = new Hashtable<String, String>();
+        properties.put(Constants.SERVICE_PID, factoryPid);
+        ServiceRegistration<ManagedServiceFactory> registration = this.context.registerService(ManagedServiceFactory.class, service, properties);
+
+        // let repository indexing complete
+        Thread.sleep(2000);
+
+        // deploy the plan
+        DeploymentIdentity deploymentIdentity = this.appDeployer.deploy(new File(
+            "src/test/resources/configuration.deployment/scoped.factory.config.plan").toURI());
+        assertNotNull(deploymentIdentity);
+
+        // let config admin events propagate
+        Thread.sleep(300);
+
+        // this will fail if factory or configurations got scoped as BSN/PID will change.
+        int factoryConfigCount = countFactoryConfigurations(this.configAdmin, factoryPid);
+        assertEquals(2, factoryConfigCount);
+
+        // check managed service factory for update events
+        assertEquals(2, service.updateCount());
+        assertEquals(2, service.getProperties().size());
+
+        // refresh or deploy again - causes undeploy/deploy
+        this.appDeployer.deploy(new File("src/test/resources/configuration.deployment/scoped.factory.config.plan").toURI());
+
+        // let config admin events propagate
+        Thread.sleep(300);
+
+        factoryConfigCount = countFactoryConfigurations(this.configAdmin, factoryPid);
+        assertEquals(2, factoryConfigCount);
+
+        // check managed service factory on delete count
+        assertEquals(2, service.deleteCount());
+        assertEquals(4, service.updateCount());
+        assertEquals(2, service.getProperties().size());
+
+        this.appDeployer.undeploy(deploymentIdentity);
+
+        // let config admin events propagate
+        Thread.sleep(300);
+
+        factoryConfigCount = countFactoryConfigurations(this.configAdmin, factoryPid);
+        assertEquals(0, factoryConfigCount);
+
+        // check managed service factory on delete count
+        assertEquals(4, service.deleteCount());
+        assertEquals(4, service.updateCount());
+        assertEquals(0, service.getProperties().size());
+
+        registration.unregister();
+    }
 }
